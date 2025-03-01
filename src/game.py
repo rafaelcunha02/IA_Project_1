@@ -4,7 +4,7 @@ from block import Block
 from constants import *
 
 class Game:
-    def __init__(self):
+    def __init__(self, level):
         self.grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
         self.blocks = self.generate_blocks()
         self.score = 0
@@ -24,7 +24,7 @@ class Game:
         
         for i in range(3):
             block_type = random.choice(BLOCK_TYPES)
-            color = random.choice(COLORS)
+            color = BLUE
             blocks.append(Block(block_type, color, positions[i]))
             
         return blocks

@@ -37,6 +37,9 @@ COLORS = [
 HIGHLIGHT_COLOR = (50, 200, 50, 128)  # Semi-transparent green for valid placement
 INVALID_COLOR = (200, 50, 50, 128)    # Semi-transparent red for invalid placement
 BACKGROUND_COLOR = (30, 30, 30)       # Dark background color
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
 # Game setup
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))

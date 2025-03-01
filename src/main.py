@@ -8,7 +8,6 @@ from constants import BACKGROUND_COLOR, title_font, screen, WINDOW_WIDTH, WINDOW
 pygame.init()
 
 def main():
-    game = Game()
     menu = Menu()
     current_block = None
     in_menu = True
@@ -22,10 +21,22 @@ def main():
                     running = False
                 elif event.type == KEYDOWN:
                     if event.key == K_s:
+                        game = Game(0)
+                        in_menu = False
+                    elif event.key == K_1:
+                        game = Game(1)
+                        in_menu = False
+                    elif event.key == K_2:
+                        game = Game(2)
+                        in_menu = False
+                    elif event.key == K_3:
+                        game = Game(3)
+                        in_menu = False
+                    elif event.key == K_i:
+                        game = Game(0)
                         in_menu = False
         else:
             screen.fill(BACKGROUND_COLOR)
-            
             for event in pygame.event.get():
                 if event.type == QUIT:
                     running = False
