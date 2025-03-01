@@ -1,16 +1,39 @@
 import pygame
+import os
 import random
 from block import Block
 from constants import *
 
 class Game:
     def __init__(self, level):
-        self.grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        self.grid = self.load_level(level)
+        self.level = level
         self.blocks = self.generate_blocks()
         self.score = 0
         self.game_over = False
         self.current_grid_pos = None
         self.can_place_current = False
+    
+    def load_level(self, level):
+        grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        base_path = os.path.dirname(__file__)
+        level_file = os.path.join(base_path, f'../levels/level{level}.txt')
+        
+        try:
+            with open(level_file, 'r') as file:
+                lines = file.readlines()
+                for row, line in enumerate(lines):
+                    for col, char in enumerate(line.strip()):
+                        if char == 'R':
+                            grid[row][col] = RED
+                        elif char == 'G':
+                            grid[row][col] = GREEN
+                        elif char == 'B':
+                            grid[row][col] = BLUE
+        except FileNotFoundError:
+            print(f"Level file {level_file} not found. Loading empty grid.")
+        
+        return grid
     
     def generate_blocks(self):
         blocks = []
@@ -212,7 +235,7 @@ class Game:
         return True
     
     def reset(self):
-        self.grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+        self.grid = self.load_level(self.level)
         self.blocks = self.generate_blocks()
         self.score = 0
         self.game_over = False

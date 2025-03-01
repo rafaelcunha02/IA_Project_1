@@ -47,3 +47,7 @@ pygame.display.set_caption('Wood Blocks')
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', 24)
 title_font = pygame.font.SysFont('Arial', 36)
+
+
+# GRIDS
+# Empty grid
