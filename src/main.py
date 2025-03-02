@@ -24,6 +24,8 @@ def main():
                     game = menu.handle_key_event(event.key)
                     if game:
                         in_menu = False
+                elif event.type == pygame.MOUSEMOTION:
+                    game = menu.handle_mouse_event(event.pos)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     game = menu.handle_mouse_event(event.pos)
                     if game:

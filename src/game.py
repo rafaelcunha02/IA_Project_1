@@ -31,7 +31,8 @@ class Game:
                         elif char == 'B':
                             grid[row][col] = BLUE
         except FileNotFoundError:
-            print(f"Level file {level_file} not found. Loading empty grid.")
+            if(level != 0):
+                print(f"Level file {level_file} not found. Loading empty grid.")
         
         return grid
     
