@@ -13,7 +13,6 @@ def main():
     current_block = None
     in_menu = True
     
-    last_mouse_pos = None
     running = True
     while running:
         if in_menu:
@@ -34,12 +33,15 @@ def main():
         else:
             screen.fill(BACKGROUND_COLOR)
             is_in_go_to_menu = False
+            is_in_hint = False
             mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
 
             for event in pygame.event.get():
                 if event.type in (MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP):
                     if game.check_mouse_in_go_to_menu(event.pos):
                         is_in_go_to_menu = True
+                    if game.check_mouse_in_hint(event.pos):
+                        is_in_hint = True
 
                 if event.type == QUIT:
                     running = False
@@ -98,7 +100,9 @@ def main():
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):
                 is_in_go_to_menu = True
-
+            elif game.check_mouse_in_hint(mouse_pos):
+                is_in_hint = True
+            
             # Draw the game
             game.draw_grid()
             
@@ -114,6 +118,11 @@ def main():
             else:
                 game.draw_go_to_menu()
             
+            if is_in_hint:
+                game.draw_hint_button_highlighted()
+            else:
+                game.draw_hint_button()
+
             if game.game_over:
                 game.draw_game_over()
             

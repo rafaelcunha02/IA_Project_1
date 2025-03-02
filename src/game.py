@@ -13,7 +13,9 @@ class Game:
         self.game_over = False
         self.current_grid_pos = None
         self.can_place_current = False
-        self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # Define the rectangle for the menu button
+        self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # rectangle for the menu button
+        self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 83, 80, 200, 40)  # rectangle for the hint button
+
     
     def load_level(self, level):
         grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -118,6 +120,19 @@ class Game:
         menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 0))
         screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
     
+    def draw_hint_button(self):
+        hint_text = font.render("Hint (H)", True, (255, 255, 255))
+        screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
+
+    def draw_hint_button_highlighted(self):
+        hint_text = font.render("Hint (H)", True, (255, 255, 0))
+        screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
+
+    def check_mouse_in_hint(self, pos):
+        if self.hint_button_rect.collidepoint(pos):
+            return True
+        return False
+
     def draw_game_over(self):
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
