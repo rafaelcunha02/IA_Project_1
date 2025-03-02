@@ -7,14 +7,15 @@ from constants import BACKGROUND_COLOR, title_font, screen, WINDOW_WIDTH, WINDOW
 
 pygame.init()
 
+
 def main():
     menu = Menu()
     current_block = None
     in_menu = True
     
+    last_mouse_pos = None
     running = True
     while running:
-                # ...existing code...
         if in_menu:
             menu.draw()
             for event in pygame.event.get():
@@ -30,10 +31,16 @@ def main():
                     game = menu.handle_mouse_event(event.pos)
                     if game:
                         in_menu = False
-        # ...existing code...
         else:
             screen.fill(BACKGROUND_COLOR)
+            is_in_go_to_menu = False
+            mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
+
             for event in pygame.event.get():
+                if event.type in (MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP):
+                    if game.check_mouse_in_go_to_menu(event.pos):
+                        is_in_go_to_menu = True
+
                 if event.type == QUIT:
                     running = False
                     
@@ -52,7 +59,7 @@ def main():
                             current_block.update_position(event.pos)
                             # Update placement preview while dragging
                             game.update_placement_preview(current_block)
-                            
+
                     elif event.type == MOUSEBUTTONUP:
                         if event.button == 1 and current_block:
                             # Try to place the block on the grid
@@ -76,14 +83,22 @@ def main():
                             current_block = None
                             # Clear preview when we're done dragging
                             game.current_grid_pos = None
-                
-                # Restart game when R is pressed
+
+                        if game.check_mouse_in_go_to_menu(event.pos):
+                            in_menu = True
+                            print("Go to menu")
+
+                # Handle key events
                 if event.type == KEYDOWN:
                     if event.key == K_r and game.game_over:
                         game.reset()
-                    elif event.key == K_m and game.game_over:
+                    elif event.key == K_m:
                         in_menu = True
             
+            # Check if the mouse is in the "Go to menu" area
+            if game.check_mouse_in_go_to_menu(mouse_pos):
+                is_in_go_to_menu = True
+
             # Draw the game
             game.draw_grid()
             
@@ -93,11 +108,15 @@ def main():
                 
             game.draw_blocks()
             game.draw_score()
+
+            if is_in_go_to_menu:
+                game.draw_go_to_menu_highlighted()
+            else:
+                game.draw_go_to_menu()
             
             if game.game_over:
                 game.draw_game_over()
             
-            # Draw title
             title_text = title_font.render("Block Blast", True, (255, 255, 255))
             screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 20))
             

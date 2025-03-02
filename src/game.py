@@ -13,6 +13,7 @@ class Game:
         self.game_over = False
         self.current_grid_pos = None
         self.can_place_current = False
+        self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # Define the rectangle for the menu button
     
     def load_level(self, level):
         grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -104,6 +105,18 @@ class Game:
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         screen.blit(score_text, (20, 20))
     
+    def draw_go_to_menu(self):
+        menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 255))
+        screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
+
+    def check_mouse_in_go_to_menu(self, pos):
+        if self.menu_button_rect.collidepoint(pos):
+            return True
+        return False
+    
+    def draw_go_to_menu_highlighted(self):
+        menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 0))
+        screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
     
     def draw_game_over(self):
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
