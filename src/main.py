@@ -14,27 +14,21 @@ def main():
     
     running = True
     while running:
+                # ...existing code...
         if in_menu:
             menu.draw()
             for event in pygame.event.get():
-                if event.type == QUIT:
+                if event.type == pygame.QUIT:
                     running = False
-                elif event.type == KEYDOWN:
-                    if event.key == K_s:
-                        game = Game(0)
+                elif event.type == pygame.KEYDOWN:
+                    game = menu.handle_key_event(event.key)
+                    if game:
                         in_menu = False
-                    elif event.key == K_1:
-                        game = Game(1)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    game = menu.handle_mouse_event(event.pos)
+                    if game:
                         in_menu = False
-                    elif event.key == K_2:
-                        game = Game(2)
-                        in_menu = False
-                    elif event.key == K_3:
-                        game = Game(3)
-                        in_menu = False
-                    elif event.key == K_i:
-                        game = Game(0)
-                        in_menu = False
+        # ...existing code...
         else:
             screen.fill(BACKGROUND_COLOR)
             for event in pygame.event.get():
