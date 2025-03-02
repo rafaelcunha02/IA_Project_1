@@ -6,7 +6,7 @@ class Menu:
     def __init__(self):
         self.title_font = pygame.font.SysFont('Arial', 48)
         self.font = pygame.font.SysFont('Arial', 24)
-        self.options = ["Press 1 for Level 1", "Press 2 for Level 2", "Press 3 for Level 3", "Press I for Infinite Mode"]
+        self.options = ["Level 1", "Level 2", "Level 3", "Infinite Mode"]
         self.current_option = 0
 
     def draw(self):
