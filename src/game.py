@@ -210,8 +210,8 @@ class Game:
             # Check if lines are cleared
             self.check_lines()
             # Check if game is over after placing the block
-            if self.check_game_over():
-                self.game_over = True
+            #if self.check_game_over():
+             #   self.game_over = True
             return True
         
         return False
@@ -220,10 +220,10 @@ class Game:
         # For each block, check if it can be placed anywhere on the grid
         for block in self.blocks:
             can_place_anywhere = False
-            
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
                     if self.can_place_block(block, (row, col)):
+                        print(f"Block {block.shape} can be placed at ({row}, {col})")
                         can_place_anywhere = True
                         break
                 if can_place_anywhere:

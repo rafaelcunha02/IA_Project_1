@@ -66,8 +66,11 @@ def main():
                                 # If all blocks are placed, generate new ones
                                 if not game.blocks:
                                     game.blocks = game.generate_blocks()
-                                    
                                     # Check if game is over
+                                    if game.check_game_over():
+                                        game.game_over = True
+
+                                else:
                                     if game.check_game_over():
                                         game.game_over = True
                             else:
