@@ -125,7 +125,6 @@ def main():
 
             if game.game_over:
                 game.draw_game_over()
-            
             title_text = title_font.render("Block Blast", True, (255, 255, 255))
             screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 20))
             

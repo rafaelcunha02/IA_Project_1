@@ -6,6 +6,8 @@ from constants import *
 
 class Game:
     def __init__(self, level):
+        self.reds = 0
+        self.greens = 0
         self.grid = self.load_level(level)
         self.level = level
         self.blocks = self.generate_blocks()
@@ -15,6 +17,8 @@ class Game:
         self.can_place_current = False
         self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # rectangle for the menu button
         self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 83, 80, 200, 40)  # rectangle for the hint button
+
+        
 
     
     def load_level(self, level):
@@ -29,8 +33,10 @@ class Game:
                     for col, char in enumerate(line.strip()):
                         if char == 'R':
                             grid[row][col] = RED
+                            self.reds += 1
                         elif char == 'G':
                             grid[row][col] = GREEN
+                            self.greens += 1
                         elif char == 'B':
                             grid[row][col] = BLUE
         except FileNotFoundError:
@@ -39,6 +45,23 @@ class Game:
         
         return grid
     
+
+    def count_reds(self):
+        reds = 0
+        for row in self.grid:
+            for cell in row:
+                if cell == RED:
+                    reds += 1
+        return reds
+    
+    def count_greens(self):
+        greens = 0
+        for row in self.grid:
+            for cell in row:
+                if cell == GREEN:
+                    greens += 1
+        return greens
+
     def generate_blocks(self):
         blocks = []
         
@@ -137,18 +160,40 @@ class Game:
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
         screen.blit(overlay, (0, 0))
-        
-        game_over_text = font.render("YOU LOST", True, (255, 0, 0))
-        score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
-        menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-        
-        screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
-                                     WINDOW_HEIGHT // 2 - 60))
-        screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
-                                 WINDOW_HEIGHT // 2))
-        screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
-                                WINDOW_HEIGHT // 2 + 60))
-    
+        if(self.level == 0):
+            game_over_text = font.render("GAME OVER", True, (255, 0, 0))
+            score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
+            menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
+            
+            screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
+                                        WINDOW_HEIGHT // 2 - 60))
+            screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
+                                    WINDOW_HEIGHT // 2))
+            screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
+                                    WINDOW_HEIGHT // 2 + 60))
+        else:
+            if (self.reds == 0):
+                game_over_text = font.render("YOU WIN", True, (255, 0, 0))
+                score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
+                menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
+                
+                screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
+                                            WINDOW_HEIGHT // 2 - 60))
+                screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
+                                        WINDOW_HEIGHT // 2))
+                screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
+                                        WINDOW_HEIGHT // 2 + 60))
+            else:
+                game_over_text = font.render("YOU LOSE", True, (255, 0, 0))
+                score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
+                menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
+                
+                screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
+                                            WINDOW_HEIGHT // 2 - 60))
+                screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
+                                        WINDOW_HEIGHT // 2))
+                screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
+                                        WINDOW_HEIGHT // 2 + 60))
     
     def can_place_block(self, block, grid_pos):
         if not grid_pos:
@@ -246,22 +291,29 @@ class Game:
         return False
     
     def check_game_over(self):
-        # For each block, check if it can be placed anywhere on the grid
-        for block in self.blocks:
-            can_place_anywhere = False
-            for row in range(GRID_SIZE):
-                for col in range(GRID_SIZE):
-                    if self.can_place_block(block, (row, col)):
-                        print(f"Block {block.shape} can be placed at ({row}, {col})")
-                        can_place_anywhere = True
-                        break
-                if can_place_anywhere:
-                    break
-            
-            if can_place_anywhere:
-                return False
+        self.reds = self.count_reds()
         
-        return True
+        # For each block, check if it can be placed anywhere on the grid
+
+        if ((self.level != 0) and (self.reds == 0)):
+            return True
+        else:
+            for block in self.blocks:
+                can_place_anywhere = False
+                for row in range(GRID_SIZE):
+                    for col in range(GRID_SIZE):
+                        if self.can_place_block(block, (row, col)):
+                            print(f"Block {block.shape} can be placed at ({row}, {col})")
+                            can_place_anywhere = True
+                            break
+                    if can_place_anywhere:
+                        break
+                
+                if can_place_anywhere:
+                    return False
+            
+            return True
+
     
     def reset(self):
         self.grid = self.load_level(self.level)
