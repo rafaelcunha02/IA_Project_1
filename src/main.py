@@ -74,7 +74,6 @@ def main():
                                     # Check if game is over
                                     if game.check_game_over():
                                         game.game_over = True
-
                                 else:
                                     if game.check_game_over():
                                         game.game_over = True
@@ -92,10 +91,15 @@ def main():
 
                 # Handle key events
                 if event.type == KEYDOWN:
-                    if event.key == K_r and game.game_over:
-                        game.reset()
-                    elif event.key == K_m:
+                    if game.game_over:
+                        if event.key == K_r:
+                            game.reset()
+                        elif event.key == K_n and game.check_wins_finite_mode():
+                            game = Game(game.level + 1)
+                            game.reset()
+                    if event.key == K_m:
                         in_menu = True
+
             
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):

@@ -164,25 +164,32 @@ class Game:
             game_over_text = font.render("GAME OVER", True, (255, 0, 0))
             score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
             menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-            
+
             screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
                                         WINDOW_HEIGHT // 2 - 60))
             screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
                                     WINDOW_HEIGHT // 2))
             screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
                                     WINDOW_HEIGHT // 2 + 60))
+
+
         else:
             if (self.reds == 0):
                 game_over_text = font.render("YOU WIN", True, (255, 0, 0))
                 score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
                 menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-                
+                next_level = font.render("Press N to go to Next Level", True, (255, 255, 255))
+
+
                 screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
                                             WINDOW_HEIGHT // 2 - 60))
                 screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
                                         WINDOW_HEIGHT // 2))
                 screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
                                         WINDOW_HEIGHT // 2 + 60))
+                if self.level < 3:
+                    screen.blit(next_level, (WINDOW_WIDTH // 2 - next_level.get_width() // 2,
+                                            WINDOW_HEIGHT // 2 + 120))
             else:
                 game_over_text = font.render("YOU LOSE", True, (255, 0, 0))
                 score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
@@ -290,20 +297,25 @@ class Game:
         
         return False
     
+
+
+    def check_wins_finite_mode(self):
+        if (self.level != 0 and self.reds == 0):
+            return True
+
     def check_game_over(self):
         self.reds = self.count_reds()
         
         # For each block, check if it can be placed anywhere on the grid
 
         if ((self.level != 0) and (self.reds == 0)):
-            return True
+            return self.check_wins_finite_mode()
         else:
             for block in self.blocks:
                 can_place_anywhere = False
                 for row in range(GRID_SIZE):
                     for col in range(GRID_SIZE):
                         if self.can_place_block(block, (row, col)):
-                            print(f"Block {block.shape} can be placed at ({row}, {col})")
                             can_place_anywhere = True
                             break
                     if can_place_anywhere:
