@@ -4,6 +4,7 @@ from pygame.locals import *
 from game import Game
 from menu import Menu
 from constants import BACKGROUND_COLOR, title_font, screen, WINDOW_WIDTH, WINDOW_HEIGHT, clock
+from bot import Bot 
 
 pygame.init()
 
@@ -12,6 +13,7 @@ def main():
     menu = Menu()
     current_block = None
     in_menu = True
+
     
     running = True
     while running:
@@ -31,6 +33,7 @@ def main():
                     if game:
                         in_menu = False
         else:
+
             screen.fill(BACKGROUND_COLOR)
             is_in_go_to_menu = False
             is_in_hint = False
@@ -88,6 +91,9 @@ def main():
                         if game.check_mouse_in_go_to_menu(event.pos):
                             in_menu = True
                             print("Go to menu")
+                        if game.check_mouse_in_hint(event.pos):
+                            bot_greedy = Bot(game, "greedy")
+                            greedy_move = bot_greedy.get_greedy_move(game)
 
                 # Handle key events
                 if event.type == KEYDOWN:
@@ -99,6 +105,21 @@ def main():
                             game.reset()
                     if event.key == K_m:
                         in_menu = True
+                    if event.key == K_h:
+                        print("h pressed")
+                        bot_greedy = Bot(game, "greedy")
+                        print("suka")
+                        greedy_move = bot_greedy.get_greedy_move(game)
+                        """if greedy_move:
+                            block, position = greedy_move
+                            game.place_block(block, position)
+                            game.blocks.remove(block)
+                            if not game.blocks:
+                                game.blocks = game.generate_blocks()
+                                if game.check_game_over():
+                                    game.game_over = True
+                            if game.check_game_over():
+                                game.game_over = True"""
 
             
             # Check if the mouse is in the "Go to menu" area

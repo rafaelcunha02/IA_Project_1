@@ -260,6 +260,8 @@ class Game:
         
         # Update score
         self.score += lines_cleared * 100
+        if(lines_cleared > 0 ):
+            print("lines cleared: ", lines_cleared)
         
         return lines_cleared > 0
     
