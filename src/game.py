@@ -12,6 +12,7 @@ class Game:
         self.level = level
         self.blocks = self.generate_blocks()
         self.score = 0
+        self.simulated_score = 0
         self.game_over = False
         self.current_grid_pos = None
         self.can_place_current = False
@@ -131,15 +132,15 @@ class Game:
         if not self.hint_position:
             return
         
-        print("drawing hint")
+        #print("drawing hint")
         
         grid_row, grid_col = self.hint_position
 
-        print("hint position", grid_row, grid_col)
+        #print("hint position", grid_row, grid_col)
 
         block = self.hint_block
 
-        print("block shape", block.shape)
+        #print("block shape", block.shape)
 
         highlight_color = HIGHLIGHT_COLOR
         
@@ -256,7 +257,6 @@ class Game:
         return True
     
     def place_block(self, block, grid_pos):
-        print("place block called")
         grid_row, grid_col = grid_pos
         
         for row_idx, row in enumerate(block.shape):
@@ -266,7 +266,7 @@ class Game:
                     self.grid[r][c] = block.color
 
     
-    def check_lines(self):
+    def check_lines(self, simulated = False):
         lines_cleared = 0
         
         # Check horizontal lines
@@ -293,7 +293,10 @@ class Game:
                 self.grid[row][col] = 0
         
         # Update score
-        self.score += lines_cleared * 100
+        if not simulated:
+            self.score += lines_cleared * 100
+        else:
+            self.simulated_score += lines_cleared * 100
 
         
         return lines_cleared > 0
@@ -328,6 +331,19 @@ class Game:
             # Check if game is over after placing the block
             #if self.check_game_over():
              #   self.game_over = True
+            return True
+        
+        return False
+    
+    def simulate_try_place_block(self, block):
+        # Already checked in update_placement_preview
+        if self.can_place_current and self.current_grid_pos:
+            self.place_block(block, self.current_grid_pos)
+            # Check if lines are cleared
+            self.check_lines(True)
+            # Check if game is over after placing the block
+            #if self.check_game_over():
+                #   self.game_over = True
             return True
         
         return False

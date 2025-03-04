@@ -11,26 +11,45 @@ class Bot:
     def get_greedy_move(self, game):
         best_move = None
         least_reds = game.count_reds()
+        prev_score = game.score
+        game.simulated_score = prev_score
+        max_score = game.score
+
+        reds_changed = False
+        print("greedy move called with score: ", game.score)
+        print("reds: ", least_reds)
+        print("simulated score: ", game.simulated_score)
+        print("max score: ", max_score)
 
         for block in self.game.blocks:
+            game.simulated_score = game.score
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
                     if self.game.can_place_block(block, (row, col)):
                         # Simulate placing the block
                         original_grid = [row[:] for row in self.game.grid]
                         self.game.current_grid_pos = (row, col)
-                        self.game.try_place_block(block)
+                        self.game.simulate_try_place_block(block)
                         reds = self.game.count_reds()
                         # Undo the move
                         self.game.grid = original_grid
 
                         if reds < least_reds:
+                            print("current vs previous least reds: ", reds, least_reds)
                             least_reds = reds
                             print("Greedy Move: ", block.shape, (row, col))
                             game.hint_block = block
                             game.hint_position = (row, col)
                             best_move = (block, (row, col))
-
+                            reds_changed = True
+                        elif not reds_changed and game.simulated_score > max_score:
+                            print("current vs previous max score: ", game.simulated_score, max_score)
+                            max_score = game.simulated_score
+                            game.simulated_score = game.score
+                            print("Greedy Move: ", block.shape, (row, col))
+                            game.hint_block = block
+                            game.hint_position = (row, col)
+                            best_move = (block, (row, col))
         return best_move
 
     def evaluate_grid(self):

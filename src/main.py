@@ -137,7 +137,7 @@ def main():
             if current_block and game.current_grid_pos:
                 game.draw_placement_preview(current_block)
 
-            # Draw hint preview if we're in hint mode
+            # Draw hint preview if we asked for a hint (to be improved for more bots)
             if greedy_move:
                 game.draw_hint_preview()
                 
