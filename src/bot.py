@@ -22,9 +22,9 @@ class Bot:
         print("max score: ", max_score)
 
         for block in self.game.blocks:
-            game.simulated_score = game.score
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
+                    game.simulated_score = game.score
                     if self.game.can_place_block(block, (row, col)):
                         # Simulate placing the block
                         original_grid = [row[:] for row in self.game.grid]
