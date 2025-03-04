@@ -17,7 +17,8 @@ class Game:
         self.can_place_current = False
         self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # rectangle for the menu button
         self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 83, 80, 200, 40)  # rectangle for the hint button
-
+        self.hint_block = None
+        self.hint_position = None
         
 
     
@@ -110,6 +111,37 @@ class Game:
         
         grid_row, grid_col = self.current_grid_pos
         highlight_color = HIGHLIGHT_COLOR if self.can_place_current else INVALID_COLOR
+        
+        # Create a surface with per-pixel alpha
+        highlight_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+        highlight_surface.fill(highlight_color)
+        
+        for row_idx, row in enumerate(block.shape):
+            for col_idx, cell in enumerate(row):
+                if cell:
+                    r, c = grid_row + row_idx, grid_col + col_idx
+                    
+                    # Only draw preview if within grid bounds
+                    if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:
+                        pos_x = GRID_OFFSET_X + c * CELL_SIZE
+                        pos_y = GRID_OFFSET_Y + r * CELL_SIZE
+                        screen.blit(highlight_surface, (pos_x, pos_y))
+
+    def draw_hint_preview(self):
+        if not self.hint_position:
+            return
+        
+        print("drawing hint")
+        
+        grid_row, grid_col = self.hint_position
+
+        print("hint position", grid_row, grid_col)
+
+        block = self.hint_block
+
+        print("block shape", block.shape)
+
+        highlight_color = HIGHLIGHT_COLOR
         
         # Create a surface with per-pixel alpha
         highlight_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
@@ -224,6 +256,7 @@ class Game:
         return True
     
     def place_block(self, block, grid_pos):
+        print("place block called")
         grid_row, grid_col = grid_pos
         
         for row_idx, row in enumerate(block.shape):
@@ -231,6 +264,7 @@ class Game:
                 if cell:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     self.grid[r][c] = block.color
+
     
     def check_lines(self):
         lines_cleared = 0
@@ -260,8 +294,7 @@ class Game:
         
         # Update score
         self.score += lines_cleared * 100
-        if(lines_cleared > 0 ):
-            print("lines cleared: ", lines_cleared)
+
         
         return lines_cleared > 0
     

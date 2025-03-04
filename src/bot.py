@@ -27,6 +27,8 @@ class Bot:
                         if reds < least_reds:
                             least_reds = reds
                             print("Greedy Move: ", block.shape, (row, col))
+                            game.hint_block = block
+                            game.hint_position = (row, col)
                             best_move = (block, (row, col))
 
         return best_move
@@ -43,3 +45,4 @@ class Bot:
 # if best_move:
 #     block, position = best_move
 #     game.place_block(block, position)
+

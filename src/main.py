@@ -37,6 +37,7 @@ def main():
             screen.fill(BACKGROUND_COLOR)
             is_in_go_to_menu = False
             is_in_hint = False
+            greedy_move = game.hint_block, game.hint_position
             mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
 
             for event in pygame.event.get():
@@ -70,6 +71,8 @@ def main():
                             # Try to place the block on the grid
                             if game.try_place_block(current_block):
                                 game.blocks.remove(current_block)
+                                game.hint_block = None
+                                game.hint_position = None
                                 
                                 # If all blocks are placed, generate new ones
                                 if not game.blocks:
@@ -106,10 +109,9 @@ def main():
                     if event.key == K_m:
                         in_menu = True
                     if event.key == K_h:
-                        print("h pressed")
                         bot_greedy = Bot(game, "greedy")
-                        print("suka")
                         greedy_move = bot_greedy.get_greedy_move(game)
+
                         """if greedy_move:
                             block, position = greedy_move
                             game.place_block(block, position)
@@ -134,6 +136,10 @@ def main():
             # Draw placement preview if we're dragging a block
             if current_block and game.current_grid_pos:
                 game.draw_placement_preview(current_block)
+
+            # Draw hint preview if we're in hint mode
+            if greedy_move:
+                game.draw_hint_preview()
                 
             game.draw_blocks()
             game.draw_score()
