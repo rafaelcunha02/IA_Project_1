@@ -131,8 +131,7 @@ def main():
                                     for block in game.blocks:
                                         print(block.shape)
                                     print("current_block ", current_block.shape)
-                                
-
+                            
                                 
                                 # If all blocks are placed, generate new ones
                                 if not game.blocks:

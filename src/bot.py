@@ -18,12 +18,15 @@ class Bot:
 
         reds_changed = False
         score_changed = False
+
+
         #print("greedy move called with score: ", game.score)
         #print("reds: ", least_reds)
         #print("simulated score: ", game.simulated_score)
         #print("max score: ", max_score)
-
         for block in self.game.blocks:
+            if (self.evaluate_grid() == 0):
+                return (block,(0,0))
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
                     game.simulated_score = game.score

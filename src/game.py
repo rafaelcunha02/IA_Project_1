@@ -245,7 +245,7 @@ class Game:
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
         screen.blit(overlay, (0, 0))
-        if(self.level == 0):
+        if(self.level not in [1,2,3]):
             game_over_text = font.render("GAME OVER", True, (255, 0, 0))
             score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
             menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
@@ -403,7 +403,8 @@ class Game:
 
 
     def check_wins_finite_mode(self):
-        if (self.level != 0 and self.reds == 0):
+        print("level in check wins finite mode", self.level)
+        if (self.level in [1,2,3] and self.reds == 0):
             return True
 
     def check_game_over(self):
