@@ -164,6 +164,7 @@ class Game:
         if not self.hint_position:
             return
         
+
         #print("drawing hint")
         
         grid_row, grid_col = self.hint_position

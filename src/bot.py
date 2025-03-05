@@ -60,7 +60,8 @@ class Bot:
                                 game.hint_block = block
                                 game.hint_position = (row, col)
                                 best_move = (block, (row, col))
-
+        
+        game.current_grid_pos = None
         return best_move
 
     def evaluate_grid(self):
