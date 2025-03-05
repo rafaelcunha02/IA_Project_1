@@ -57,28 +57,45 @@ class Game:
         last_col = col + len(block[0]) - 1
         print("col ", col)
         print("last col ", last_col)
+
+        if(self.reds > 0):
+            reds = 0
+            evaluated_rows = self.grid[row:last_row + 1]
+            for roww in evaluated_rows:
+                for cell in roww:
+                    if cell == RED:
+                        reds += 1
+
+
+            for rowww in self.grid:
+                counter = 0
+                for cell in rowww:
+                    counter += 1
+                    if cell == RED and counter > col and counter <= last_col:
+                        reds += 1
+        
+            return reds
+        
+        else:
+            reds = 0
+            evaluated_rows = self.grid[row:last_row + 1]
+            for roww in evaluated_rows:
+                for cell in roww:
+                    if cell == BLUE:
+                        reds += 1
+
+
+            for rowww in self.grid:
+                counter = 0
+                for cell in rowww:
+                    counter += 1
+                    if cell == BLUE and counter > col and counter <= last_col:
+                        reds += 1
+        
+            return reds
         
 
 
-        reds = 0
-        evaluated_rows = self.grid[row:last_row + 1]
-        for roww in evaluated_rows:
-            for cell in roww:
-                if cell == RED:
-                    reds += 1
-
-
-        for rowww in self.grid:
-            counter = 0
-            for cell in rowww:
-                counter += 1
-                if cell == RED and counter > col and counter <= last_col:
-                    reds += 1
-    
-        return reds
-
-
-    
 
     def count_reds(self):
         reds = 0
@@ -87,6 +104,7 @@ class Game:
                 if cell == RED:
                     reds += 1
         return reds
+        
     
     def count_greens(self):
         greens = 0
