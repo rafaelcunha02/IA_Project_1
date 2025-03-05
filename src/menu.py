@@ -64,6 +64,6 @@ class Menu:
 
     def start_game(self, level, player_type):
         # Initialize the game with the selected level and player type
-        game = Game(level + 1)
+        game = Game(level + 1, player_type)
         game.player_type = player_type  # Assuming Game class can handle player_type
         return game

@@ -51,29 +51,72 @@ def main():
                     running = False
                     
                 if not game.game_over:
-                    if event.type == MOUSEBUTTONDOWN:
-                        if event.button == 1:  # Left mouse button
-                            # Check if we clicked on a block
-                            for block in game.blocks:
-                                if block.is_point_inside(event.pos):
-                                    current_block = block
-                                    current_block.start_drag(event.pos)
-                                    break
-                                    
-                    elif event.type == MOUSEMOTION:
-                        if current_block:
-                            current_block.update_position(event.pos)
-                            # Update placement preview while dragging
-                            game.update_placement_preview(current_block)
+                    if(game.player_type == 0):
 
-                    elif event.type == MOUSEBUTTONUP:
-                        if event.button == 1 and current_block:
-                            # Try to place the block on the grid
-                            if game.try_place_block(current_block):
+                        if event.type == MOUSEBUTTONDOWN:
+                            if event.button == 1:  # Left mouse button
+                                # Check if we clicked on a block
+                                for block in game.blocks:
+                                    if block.is_point_inside(event.pos):
+                                        current_block = block
+                                        current_block.start_drag(event.pos)
+                                        break
+                                        
+                        elif event.type == MOUSEMOTION:
+                            if current_block:
+                                current_block.update_position(event.pos)
+                                # Update placement preview while dragging
+                                game.update_placement_preview(current_block)
+
+                        elif event.type == MOUSEBUTTONUP:
+                            if event.button == 1 and current_block:
+                                # Try to place the block on the grid
+                                if game.try_place_block(current_block):
+                                    game.blocks.remove(current_block)
+                                    game.hint_block = None
+                                    game.hint_position = None
+                                    
+                                    # If all blocks are placed, generate new ones
+                                    if not game.blocks:
+                                        game.blocks = game.generate_blocks()
+                                        # Check if game is over
+                                        if game.check_game_over():
+                                            game.game_over = True
+                                    else:
+                                        if game.check_game_over():
+                                            game.game_over = True
+                                else:
+                                    current_block.reset_position()
+                                    
+                                current_block.stop_drag()
+                                current_block = None
+                                # Clear preview when we're done dragging
+                                game.current_grid_pos = None
+
+                            if game.check_mouse_in_go_to_menu(event.pos):
+                                in_menu = True
+                                print("Go to menu")
+                            if game.check_mouse_in_hint(event.pos):
+                                bot_greedy = Bot(game, "greedy")
+                                greedy_move = bot_greedy.get_greedy_move(game)
+                    else:
+                        #print("other game lol")
+                        if event.type == MOUSEBUTTONUP:
+                            bot_greedy = Bot(game, "greedy")
+                            
+                            greedy_move = bot_greedy.get_greedy_move(game)
+                            if(greedy_move):
+                                (current_block, (row, col)) = greedy_move
+                            print("row ", row), print("col ", col)
+                            if event.button == 1 and current_block:
+                                # Try to place the block on the grid
+                                game.place_block(current_block, (row, col))
+                                game.check_lines()
+                                print("placing")
                                 game.blocks.remove(current_block)
                                 game.hint_block = None
                                 game.hint_position = None
-                                
+                                    
                                 # If all blocks are placed, generate new ones
                                 if not game.blocks:
                                     game.blocks = game.generate_blocks()
@@ -83,20 +126,17 @@ def main():
                                 else:
                                     if game.check_game_over():
                                         game.game_over = True
-                            else:
-                                current_block.reset_position()
-                                
-                            current_block.stop_drag()
-                            current_block = None
-                            # Clear preview when we're done dragging
-                            game.current_grid_pos = None
+                                """else:
+                                    current_block.reset_position()
+                                    
+                                current_block.stop_drag()
+                                current_block = None
+                                # Clear preview when we're done dragging
+                                game.current_grid_pos = None"""
 
-                        if game.check_mouse_in_go_to_menu(event.pos):
-                            in_menu = True
-                            print("Go to menu")
-                        if game.check_mouse_in_hint(event.pos):
-                            bot_greedy = Bot(game, "greedy")
-                            greedy_move = bot_greedy.get_greedy_move(game)
+                            if game.check_mouse_in_go_to_menu(event.pos):
+                                in_menu = True
+                                print("Go to menu")
 
                 # Handle key events
                 if event.type == KEYDOWN:
@@ -104,7 +144,7 @@ def main():
                         if event.key == K_r:
                             game.reset()
                         elif event.key == K_n and game.check_wins_finite_mode():
-                            game = Game(game.level + 1)
+                            game = Game(game.level + 1, game.player_type)
                             game.reset()
                     if event.key == K_m:
                         in_menu = True

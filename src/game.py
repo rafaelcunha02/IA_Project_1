@@ -5,7 +5,8 @@ from block import Block
 from constants import *
 
 class Game:
-    def __init__(self, level):
+    def __init__(self, level, player_type):
+        self.player_type=player_type
         self.reds = 0
         self.greens = 0
         self.grid = self.load_level(level)
@@ -55,8 +56,8 @@ class Game:
         
         last_row = row + block_rows - 1
         last_col = col + len(block[0]) - 1
-        print("col ", col)
-        print("last col ", last_col)
+        #print("col ", col)
+        #print("last col ", last_col)
 
         if(self.reds > 0):
             reds = 0
