@@ -14,8 +14,10 @@ class Bot:
         prev_score = game.score
         game.simulated_score = prev_score
         max_score = game.score
+        max_aligned_reds = 0
 
         reds_changed = False
+        score_changed = False
         print("greedy move called with score: ", game.score)
         print("reds: ", least_reds)
         print("simulated score: ", game.simulated_score)
@@ -50,6 +52,15 @@ class Bot:
                             game.hint_block = block
                             game.hint_position = (row, col)
                             best_move = (block, (row, col))
+                            score_changed = True
+                        elif not reds_changed and not score_changed:
+                            current_aligned_reds = game.count_aligned_reds(block.shape, (row, col))
+                            if current_aligned_reds > max_aligned_reds:
+                                max_aligned_reds = current_aligned_reds
+                                game.hint_block = block
+                                game.hint_position = (row, col)
+                                best_move = (block, (row, col))
+
         return best_move
 
     def evaluate_grid(self):
