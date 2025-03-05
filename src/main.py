@@ -98,25 +98,44 @@ def main():
                                 print("Go to menu")
                             if game.check_mouse_in_hint(event.pos):
                                 bot_greedy = Bot(game, "greedy")
-                                greedy_move = bot_greedy.get_greedy_move(game)
+                                greedy_move = bot_greedy.auto_play_greedy(game)
                     else:
                         #print("other game lol")
-                        if event.type == MOUSEBUTTONUP:
+                        if event.type == KEYDOWN and event.key == K_RIGHT:
+
+                            greedy_move = None
+                            current_block = None
+                            game.current_grid_pos = None
                             bot_greedy = Bot(game, "greedy")
-                            
-                            greedy_move = bot_greedy.get_greedy_move(game)
+
+                            greedy_move = bot_greedy.auto_play_greedy(game)
                             if(greedy_move):
                                 (current_block, (row, col)) = greedy_move
                             print("row ", row), print("col ", col)
-                            if event.button == 1 and current_block:
+                            print(current_block in game.blocks)
+                            if current_block:
                                 # Try to place the block on the grid
                                 game.place_block(current_block, (row, col))
+                                #print("placed")
                                 game.check_lines()
-                                print("placing")
-                                game.blocks.remove(current_block)
-                                game.hint_block = None
-                                game.hint_position = None
-                                    
+                                #print("placing")
+                                if current_block in game.blocks:
+                                    game.blocks.remove(current_block)
+                                    print("game blocks: ", len(game.blocks))
+                                    greedy_move = None
+                                    print("set greedy move to none")
+                                    current_block = None
+                                    print("set block to none")
+                                    game.current_grid_pos = None
+                                else:
+                                    print("Error: current_block not in game.blocks")
+                                    print("game blocks: ")
+                                    for block in game.blocks:
+                                        print(block.shape)
+                                    print("current_block ", current_block.shape)
+                                
+
+                                
                                 # If all blocks are placed, generate new ones
                                 if not game.blocks:
                                     game.blocks = game.generate_blocks()
@@ -133,7 +152,7 @@ def main():
                                 current_block = None
                                 # Clear preview when we're done dragging
                                 game.current_grid_pos = None"""
-
+                        elif event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
                                 in_menu = True
                                 print("Go to menu")
@@ -150,7 +169,7 @@ def main():
                         in_menu = True
                     if event.key == K_h:
                         bot_greedy = Bot(game, "greedy")
-                        greedy_move = bot_greedy.get_greedy_move(game)
+                        greedy_move = bot_greedy.auto_play_greedy(game)
 
                         """if greedy_move:
                             block, position = greedy_move

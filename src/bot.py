@@ -8,61 +8,51 @@ class Bot:
         self.game = game
         self.mode = mode
 
-    def get_greedy_move(self, game):
+    def auto_play_greedy(self, game):
         best_move = None
-        least_reds = game.count_reds()
-        prev_score = game.score
-        game.simulated_score = prev_score
-        max_score = game.score
-        max_aligned_reds = 0
-
-        reds_changed = False
-        score_changed = False
-        #print("greedy move called with score: ", game.score)
-        #print("reds: ", least_reds)
-        #print("simulated score: ", game.simulated_score)
-        #print("max score: ", max_score)
 
         for block in self.game.blocks:
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
-                    game.simulated_score = game.score
+                    # Copy grid
+                    simulated_grid = [row[:] for row in self.game.grid]
+                    
                     if self.game.can_place_block(block, (row, col)):
-                        # Simulate placing the block
-                        original_grid = [row[:] for row in self.game.grid]
-                        self.game.current_grid_pos = (row, col)
-                        self.game.simulate_try_place_block(block)
-                        reds = self.game.count_reds()
-                        # Undo the move
-                        self.game.grid = original_grid
-
-                        if reds < least_reds:
-                            print("current vs previous least reds: ", reds, least_reds)
-                            least_reds = reds
-                            print("Greedy Move: ", block.shape, (row, col))
-                            game.hint_block = block
-                            game.hint_position = (row, col)
-                            best_move = (block, (row, col))
-                            reds_changed = True
-                        elif not reds_changed and game.simulated_score > max_score:
-                            print("current vs previous max score: ", game.simulated_score, max_score)
-                            max_score = game.simulated_score
-                            game.simulated_score = game.score
-                            print("Greedy Move: ", block.shape, (row, col))
-                            game.hint_block = block
-                            game.hint_position = (row, col)
-                            best_move = (block, (row, col))
-                            score_changed = True
-                        elif not reds_changed and not score_changed:
-                            current_aligned_reds = game.count_aligned_reds(block.shape, (row, col))
-                            if current_aligned_reds > max_aligned_reds:
-                                max_aligned_reds = current_aligned_reds
-                                game.hint_block = block
+                        # Temporary Game State
+                        original_grid = self.game.grid
+                        self.game.grid = simulated_grid
+                        
+                        try:
+                            # Simulate block placement / new red amount / score calculation
+                            self.game.simulate_try_place_block(block)
+                            reds = self.game.count_reds()
+                            simulated_score = self.game.score
+                            
+                            # Priority:
+                            # 1. Reduce reds
+                            # 2. Increase score
+                            # 3. Maximize aligned reds
+                            move_priority = (
+                                -reds,  # Lower reds is better
+                                simulated_score,
+                                game.count_aligned_reds(block.shape, (row, col))
+                            ) # (When we compare tuples in Cobrinhas, they're compared using the first element, remember FPRO)
+                            
+                            # Update best move better move found
+                            if best_move is None or move_priority > best_move[1]: # if current move priority is better than best move's move priority 
+                                best_move = (
+                                    (block, (row, col)),  # Move
+                                    move_priority  # Priority score for comparison
+                                )
                                 game.hint_position = (row, col)
-                                best_move = (block, (row, col))
+                                game.hint_block = block # Hint case for human mode
+                        
+                        finally:
+                            # reset grid original grid
+                            self.game.grid = original_grid
         
-        game.current_grid_pos = None
-        return best_move
+        # Return move only, not move with priority score associated
+        return best_move[0] if best_move else None
 
     def evaluate_grid(self):
         # Simple evaluation function: count the number of filled cells
