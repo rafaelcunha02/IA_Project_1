@@ -410,8 +410,8 @@ class Game:
         self.reds = self.count_reds()
         
         # For each block, check if it can be placed anywhere on the grid
-
-        if ((self.level != 0) and (self.reds == 0)):
+        print("level: ", self.level)
+        if ((self.level in [1,2,3]) and (self.reds == 0)):
             return self.check_wins_finite_mode()
         else:
             for block in self.blocks:
