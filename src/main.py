@@ -13,8 +13,6 @@ def main():
     menu = Menu()
     current_block = None
     in_menu = True
-
-    
     running = True
     while running:
         if in_menu:
@@ -27,7 +25,7 @@ def main():
                     if game:
                         in_menu = False
                 elif event.type == pygame.MOUSEMOTION:
-                    game = menu.handle_mouse_event(event.pos)
+                    game = menu.handle_mouse_motion(event.pos)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     game = menu.handle_mouse_event(event.pos)
                     if game:
@@ -145,13 +143,6 @@ def main():
                                 else:
                                     if game.check_game_over():
                                         game.game_over = True
-                                """else:
-                                    current_block.reset_position()
-                                    
-                                current_block.stop_drag()
-                                current_block = None
-                                # Clear preview when we're done dragging
-                                game.current_grid_pos = None"""
                         elif event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
                                 in_menu = True
@@ -170,19 +161,7 @@ def main():
                     if event.key == K_h:
                         bot_greedy = Bot(game, "greedy")
                         greedy_move = bot_greedy.auto_play_greedy(game)
-
-                        """if greedy_move:
-                            block, position = greedy_move
-                            game.place_block(block, position)
-                            game.blocks.remove(block)
-                            if not game.blocks:
-                                game.blocks = game.generate_blocks()
-                                if game.check_game_over():
-                                    game.game_over = True
-                            if game.check_game_over():
-                                game.game_over = True"""
-
-            
+        
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):
                 is_in_go_to_menu = True

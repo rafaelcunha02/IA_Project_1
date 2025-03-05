@@ -47,6 +47,16 @@ class Menu:
                 self.current_option = i
                 return self.select_option()
         return None
+    
+
+    def handle_mouse_motion(self, pos):
+        options = self.level_options if self.current_menu == "level" else self.player_options
+        for i, option in enumerate(options):
+            option_text = self.font.render(option, True, (255, 255, 255))
+            option_rect = option_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 50 + i * 50))
+            if option_rect.collidepoint(pos):
+                self.current_option = i
+                
 
     def select_option(self):
         if self.current_menu == "level":
