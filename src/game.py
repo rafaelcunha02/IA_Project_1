@@ -9,8 +9,8 @@ class Game:
         self.player_type=player_type
         self.reds = 0
         self.greens = 0
-        self.grid = self.load_level(level)
         self.level = level
+        self.grid = self.load_level(level)
         self.blocks = self.generate_blocks()
         self.score = 0
         self.simulated_score = 0
@@ -49,7 +49,7 @@ class Game:
         return grid
     
 
-    def count_aligned_reds(self, block=[[0, 1, 0], [1, 1, 1]], position=(2,2)):
+    def count_aligned_reds(self, block, position):
         
         row, col = position
         block_rows = len(block)
@@ -58,6 +58,7 @@ class Game:
         last_col = col + len(block[0]) - 1
         #print("col ", col)
         #print("last col ", last_col)
+        reds = 0
 
         if(self.reds > 0):
             reds = 0
@@ -75,26 +76,34 @@ class Game:
                     if cell == RED and counter > col and counter <= last_col:
                         reds += 1
         
-            return reds
+        return reds
         
-        else:
-            reds = 0
-            evaluated_rows = self.grid[row:last_row + 1]
-            for roww in evaluated_rows:
-                for cell in roww:
-                    if cell == BLUE:
-                        reds += 1
+
+        
+
+    def count_aligned_blues(self, block, position):
+        row, col = position
+        block_rows = len(block)
+        
+        last_row = row + block_rows - 1
+        last_col = col + len(block[0]) - 1
+        blues = 0
+
+        evaluated_rows = self.grid[row:last_row + 1]
+        for roww in evaluated_rows:
+            for cell in roww:
+                if cell == BLUE:
+                    blues += 1
 
 
-            for rowww in self.grid:
-                counter = 0
-                for cell in rowww:
-                    counter += 1
-                    if cell == BLUE and counter > col and counter <= last_col:
-                        reds += 1
-        
-            return reds
-        
+        for rowww in self.grid:
+            counter = 0
+            for cell in rowww:
+                counter += 1
+                if cell == BLUE and counter > col and counter <= last_col:
+                    blues += 1
+    
+        return blues
 
 
 
@@ -183,7 +192,6 @@ class Game:
         if not self.hint_position:
             return
         
-
         #print("drawing hint")
         
         grid_row, grid_col = self.hint_position
@@ -411,7 +419,7 @@ class Game:
         self.reds = self.count_reds()
         
         # For each block, check if it can be placed anywhere on the grid
-        print("level: ", self.level)
+        #print("level: ", self.level)
         if ((self.level in [1,2,3]) and (self.reds == 0)):
             return self.check_wins_finite_mode()
         else:

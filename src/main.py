@@ -31,7 +31,6 @@ def main():
                     if game:
                         in_menu = False
         else:
-
             screen.fill(BACKGROUND_COLOR)
             is_in_go_to_menu = False
             is_in_hint = False
@@ -50,7 +49,6 @@ def main():
                     
                 if not game.game_over:
                     if(game.player_type == 0):
-
                         if event.type == MOUSEBUTTONDOWN:
                             if event.button == 1:  # Left mouse button
                                 # Check if we clicked on a block
@@ -100,7 +98,6 @@ def main():
                     else:
                         #print("other game lol")
                         if event.type == KEYDOWN and event.key == K_RIGHT:
-
                             greedy_move = None
                             current_block = None
                             game.current_grid_pos = None
@@ -109,8 +106,8 @@ def main():
                             greedy_move = bot_greedy.auto_play_greedy(game)
                             if(greedy_move):
                                 (current_block, (row, col)) = greedy_move
-                            print("row ", row), print("col ", col)
-                            print(current_block in game.blocks)
+                            #print("row ", row), print("col ", col)
+                            #print(current_block in game.blocks)
                             if current_block:
                                 # Try to place the block on the grid
                                 game.place_block(current_block, (row, col))

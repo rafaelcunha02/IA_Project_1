@@ -15,9 +15,13 @@ class Bot:
         game.simulated_score = prev_score
         max_score = game.score
         max_aligned_reds = 0
+        max_aligned_blues = 0
+
 
         reds_changed = False
         score_changed = False
+        can_align_reds = False
+        can_align_blues = False
 
 
         #print("greedy move called with score: ", game.score)
@@ -58,20 +62,33 @@ class Bot:
                             score_changed = True
                         elif not reds_changed and not score_changed:
                             current_aligned_reds = game.count_aligned_reds(block.shape, (row, col))
+                            print("current_aligned_reds: ", current_aligned_reds)
                             if current_aligned_reds > max_aligned_reds:
+                                can_align_reds = True
                                 max_aligned_reds = current_aligned_reds
                                 game.hint_block = block
                                 game.hint_position = (row, col)
                                 best_move = (block, (row, col))
+                            elif not can_align_reds:
+                                can_align_blues = True
+                                current_aligned_blues = game.count_aligned_blues(block.shape, (row, col))
+                                if current_aligned_blues > max_aligned_blues:
+                                    max_aligned_blues = current_aligned_blues
+                                    game.hint_block = block
+                                    game.hint_position = (row, col)
+                                    best_move = (block, (row, col))
         
         game.current_grid_pos = None
         if(best_move):
             (b, (r, c)) = best_move
-            print("Best move being returned:", b.shape)
-            print("Row:", r)
-            print("Column:", c)
+            #print("Best move being returned:", b.shape)
+            #print("Row:", r)
+            #print("Column:", c)
         else: 
             print("best move is none")
+            print(can_align_reds)
+            print("align reds?: ", can_align_reds)
+            print("align blues?: ", can_align_blues)
         return best_move
     
 
