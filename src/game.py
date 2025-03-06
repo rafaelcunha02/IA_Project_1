@@ -326,9 +326,10 @@ class Game:
                     self.grid[r][c] = block.color
 
     
-    def check_lines(self, simulated = False):
+    def check_lines(self, simulated):
         lines_cleared = 0
         
+        #print("CALLED CHECKLINES ", simulated)
         # Check horizontal lines
         rows_to_clear = []
         for row in range(GRID_SIZE):
@@ -357,6 +358,7 @@ class Game:
             self.score += lines_cleared * 100
         else:
             self.simulated_score += lines_cleared * 100
+            #print("simulated score: ", self.simulated_score)
 
         
         return lines_cleared > 0
@@ -387,7 +389,7 @@ class Game:
         if self.can_place_current and self.current_grid_pos:
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
-            self.check_lines()
+            self.check_lines(False)
             # Check if game is over after placing the block
             #if self.check_game_over():
              #   self.game_over = True
@@ -396,8 +398,12 @@ class Game:
         return False
     
     def simulate_try_place_block(self, block):
-        # Already checked in update_placement_preview
+        #print("calling simulated placement")
+
+        self.can_place_current = self.can_place_block(block, self.current_grid_pos)
+
         if self.can_place_current and self.current_grid_pos:
+            #print("calling simulated placement 2")
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
             self.check_lines(True)

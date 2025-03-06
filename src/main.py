@@ -112,15 +112,15 @@ def main():
                                 # Try to place the block on the grid
                                 game.place_block(current_block, (row, col))
                                 #print("placed")
-                                game.check_lines()
+                                game.check_lines(False)
                                 #print("placing")
                                 if current_block in game.blocks:
                                     game.blocks.remove(current_block)
-                                    print("game blocks: ", len(game.blocks))
+                                    #print("game blocks: ", len(game.blocks))
                                     greedy_move = None
-                                    print("set greedy move to none")
+                                    #print("set greedy move to none")
                                     current_block = None
-                                    print("set block to none")
+                                    #print("set block to none")
                                     game.current_grid_pos = None
                                 else:
                                     print("Error: current_block not in game.blocks")

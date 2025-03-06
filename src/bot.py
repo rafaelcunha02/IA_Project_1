@@ -40,31 +40,40 @@ class Bot:
                         self.game.current_grid_pos = (row, col)
                         self.game.simulate_try_place_block(block)
                         reds = self.game.count_reds()
+                        #print("new reds:", reds)
+
+                        #if self.game.grid == original_grid:
+                        #    print("iguais!!!")
                         # Undo the move
                         self.game.grid = original_grid
-
                         if reds < least_reds:
-                            print("current vs previous least reds: ", reds, least_reds)
+                            #print("current vs previous least reds: ", reds, least_reds)
                             least_reds = reds
-                            print("Greedy Move: ", block.shape, (row, col))
+                            #print("Greedy Move: ", block.shape, (row, col))
                             game.hint_block = block
                             game.hint_position = (row, col)
                             best_move = (block, (row, col))
                             reds_changed = True
+                            score_changed = False
+                            can_align_reds = False
+                            can_align_blues = False
                         elif not reds_changed and game.simulated_score > max_score:
-                            print("current vs previous max score: ", game.simulated_score, max_score)
+                            #print("current vs previous max score: ", game.simulated_score, max_score)
                             max_score = game.simulated_score
                             game.simulated_score = game.score
-                            print("Greedy Move: ", block.shape, (row, col))
+                            #print("Greedy Move: ", block.shape, (row, col))
                             game.hint_block = block
                             game.hint_position = (row, col)
                             best_move = (block, (row, col))
                             score_changed = True
+                            can_align_reds = False
+                            can_align_blues = False
                         elif not reds_changed and not score_changed:
                             current_aligned_reds = game.count_aligned_reds(block.shape, (row, col))
-                            print("current_aligned_reds: ", current_aligned_reds)
+                            #print("current_aligned_reds: ", current_aligned_reds)
                             if current_aligned_reds > max_aligned_reds:
                                 can_align_reds = True
+                                can_align_blues = False
                                 max_aligned_reds = current_aligned_reds
                                 game.hint_block = block
                                 game.hint_position = (row, col)
@@ -84,6 +93,10 @@ class Bot:
             #print("Best move being returned:", b.shape)
             #print("Row:", r)
             #print("Column:", c)
+            reds_changed and print("DELETE REDS")
+            score_changed and print("SCORE INCREASE")
+            can_align_reds and print("ALIGN WITH REDS")
+            can_align_blues and print("ALIGN WITH BLUES")
         else: 
             print("best move is none")
             print(can_align_reds)
