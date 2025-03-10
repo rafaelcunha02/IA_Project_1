@@ -222,6 +222,10 @@ class Game:
     def draw_score(self):
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         screen.blit(score_text, (20, 20))
+
+    def draw_remaining_reds(self):
+        reds_text = font.render(f"Red Squares Remaining: {self.reds}", True, (255, 255, 255))
+        screen.blit(reds_text, (20, 50))
     
     def draw_go_to_menu(self):
         menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 255))
@@ -452,3 +456,4 @@ class Game:
         self.game_over = False
         self.current_grid_pos = None
         self.can_place_current = False
+        self.reds = self.count_reds()

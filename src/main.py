@@ -177,6 +177,7 @@ def main():
                 
             game.draw_blocks()
             game.draw_score()
+            game.draw_remaining_reds()
 
             if is_in_go_to_menu:
                 game.draw_go_to_menu_highlighted()
