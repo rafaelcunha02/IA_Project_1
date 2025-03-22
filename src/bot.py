@@ -146,29 +146,145 @@ class Bot:
         return filled_cells
     
 
-
-    def heuristic(self, state):
-        """Calculate heuristic value of state for A* search.
-        
-        A lower value indicates a better state.
-        """
-        # For level-based games with red blocks
-        if self.game.level in [1, 2, 3]:
-            # Prioritize states that remove red blocks
-            return state.reds * 1000 - state.score
-        else:
-            # For endless mode, prioritize score
-            return -state.score
-
     def simulate_move(self, game_state, block, position):
         """Simulate a move and return the resulting game state."""
         # Create a deep copy of the game state to avoid modifying the original
-        new_game = copy.deepcopy(game_state)
-        
+        new_game = copy.deepcopy(game_state)  # Use deepcopy to ensure the original game state is not altered
+    
         # Set the current grid position and try to place the block
         new_game.current_grid_pos = position
         new_game.try_place_block(block)
+    
+        # Remove the block from the list of available blocks in the copied game state
+        for bloco in new_game.blocks:
+            if bloco.shape == block.shape:
+                new_game.blocks.remove(bloco)
+                #print("Found and removed matching block")
+                break
+    
+        #print("Blocks remaining in new_game:", new_game.blocks)
+    
+        # Create a new Simulation object based on the modified game state
+        new_game_sim = Simulation(
+            reds=new_game.count_reds(),
+            score=new_game.score,
+            aligned_reds=new_game.count_aligned_reds(block.shape, position),
+            aligned_blues=new_game.count_aligned_blues(block.shape, position),
+            game=new_game,  # Pass the modified game state
+        )
+    
+        return new_game_sim
+    
+
+
+    def a_star_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
+        open_set = []
+        closed_set = set()
+        g_score = {current_state: 0}
+        f_score = {current_state: self.heuristic(current_state, goal_state)}
+        parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
+    
+        open_set.append(current_state)
+    
+        # Track the closest state to the goal
+        closest_state = current_state
+        closest_f_score = f_score[current_state]
+    
+        while open_set:
+            current = min(open_set, key=lambda state: f_score.get(state, float('inf')))
+            print("CURRENT: ", current)
+            print("GOAL: ", goal_state)
+    
+            # Check if goal is reached
+            if self.is_goal_state(current, goal_state):
+                print("entrou")
+                return self.reconstruct_move(parents, current)
+    
+            open_set.remove(current)
+            closed_set.add(current)
+    
+            # Update the closest state if necessary
+            if f_score[current] < closest_f_score:
+                closest_state = current
+                closest_f_score = f_score[current]
+    
+            # Get the current depth
+            _, _, current_depth = parents[current]
+    
+            # Stop expanding if the depth limit is reached
+            if current_depth >= depth_limit:
+                continue
+    
+            for move in possible_moves:
+                (block, (row, col), simulation) = move
+                neighbor = self.simulate_move(current.game, block, (row, col))
+    
+                if neighbor in closed_set:
+                    continue
+    
+                tentative_g_score = g_score[current] + self.cost(current, move)
+    
+                if neighbor not in open_set:
+                    open_set.append(neighbor)
+                elif tentative_g_score >= g_score.get(neighbor, float('inf')):
+                    continue
+    
+                # Update scores, parent, and depth
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_state)
+                parents[neighbor] = (current, move, current_depth + 1)  # Increment depth
+    
+        # If no goal state is found, return the move leading to the closest state
+        print("Goal state not found. Returning closest state.")
+        return self.reconstruct_move(parents, closest_state)
+    
+    def is_goal_state(self, state, goal_state):
+        # Custom logic to check if the goal is reached
+        return state.reds == goal_state.reds
+
+    def heuristic(self, state, goal_state):
+        return (
+            state.reds * 1000 -  # Prioritize fewer reds
+            state.aligned_reds * 100 +  # Prioritize more aligned reds
+            state.aligned_blues * 10  # Prioritize more aligned blues
+        )
+
+
+    def reconstruct_move(self, parents, current):
+        # Trace back to the first move
+        while current in parents and parents[current][0] is not None:  # While there is a parent
+            parent, move, _ = parents[current]  # Extract parent, move, and depth
+            if parent is None:  # If we've reached the start state
+                print("Move to return:", move)
+                return move  # Return the move that led to the current state
+            if parent == parents[current][0]:  # If this is the first move
+                print("Returning first move:", move)
+                (block, (row, col), simulation) = move
+                return (block, (row,col))
+            current = parent
+        print("No valid move found!")
+        return None
+
+    def cost(self, current, move):
+        # Implement logic to calculate the cost of a move
+        return 1  # Example cost for each move
+    
+    def auto_play_astar(self):
+        """Commander function that finds and evaluates moves using A* algorithm."""
+        if self.evaluate_grid() == 0:
+            return (self.game.blocks[0], (0, 0))
         
-        return new_game
+        possible_moves = self.find_possible_moves(self.game)
     
-    
+        current_state = Simulation(
+            reds=self.game.count_reds(),
+            score=self.game.score,
+            aligned_reds=0,
+            aligned_blues=0,
+            game=self.game
+        )
+        
+        goal_state = Simulation(0, None, None, None, None)
+        
+        depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
+        return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)

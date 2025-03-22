@@ -49,6 +49,7 @@ class Game:
         return grid
     
 
+
     def count_aligned_reds(self, block, position):
         
         row, col = position
@@ -125,6 +126,7 @@ class Game:
         return greens
 
     def generate_blocks(self):
+        print("generating blocks")
         blocks = []
         
         # Positions for the three blocks at the bottom
