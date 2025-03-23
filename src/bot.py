@@ -252,13 +252,17 @@ class Bot:
         return state.reds == goal_state.reds
 
     def heuristic(self, state, goal_state):
+        # If there are no valid moves, return a very high score to deprioritize this state
+        if state.game.game_over:
+            return float('inf')  # Infinite score for states with no valid moves
+    
+        # Otherwise, calculate the heuristic based on the priorities
         return (
             state.reds * 1000 -  # Prioritize fewer reds
-            state.score * 2 -
-            state.aligned_reds * 10 -  # Prioritize more aligned reds
-            state.aligned_blues * 10  # Prioritize more aligned blues
+            state.score * 2 -    # Then prioritize more score
+            state.aligned_reds * 10 -  # Then prioritize more aligned reds
+            state.aligned_blues * 10  # Then prioritize more aligned blues
         )
-
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
@@ -306,7 +310,6 @@ class Bot:
         
         depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)
-
 
 
 

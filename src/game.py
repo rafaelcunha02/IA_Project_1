@@ -454,6 +454,7 @@ class Game:
                 if can_place_anywhere:
                     return False
             
+            self.game_over = True
             return True
 
     
