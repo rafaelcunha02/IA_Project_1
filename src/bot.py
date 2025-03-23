@@ -253,9 +253,16 @@ class Bot:
 
     def heuristic(self, state, goal_state):
         # If there are no valid moves, return a very high score to deprioritize this state
+
+
         if state.game.game_over:
             return float('inf')  # Infinite score for states with no valid moves
-    
+
+        if(goal_state.reds != 0):
+            return(
+                - state.score
+                - state.aligned_blues * 10
+            )
         # Otherwise, calculate the heuristic based on the priorities
         return (
             state.reds * 1000 -  # Prioritize fewer reds
@@ -306,7 +313,12 @@ class Bot:
             game=self.game
         )
         
-        goal_state = Simulation(0, None, None, None, None)
+        if(self.game.level > 3 or self.game.level < 1):
+            print("LEVEL")
+            print(self.game.level)
+            goal_state = Simulation(None, float('inf'), None, None, None)
+        else:
+            goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)
@@ -384,7 +396,13 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        goal_state = Simulation(0, None, None, None, None, None)
+
+        if(self.game.level > 3 or self.game.level < 1):
+            print("LEVEL")
+            print(self.game.level)
+            goal_state = Simulation(None, float('inf'), None, None, None)
+        else:
+            goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
         return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
