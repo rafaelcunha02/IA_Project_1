@@ -34,7 +34,7 @@ def main():
             screen.fill(BACKGROUND_COLOR)
             is_in_go_to_menu = False
             is_in_hint = False
-            greedy_move = game.hint_block, game.hint_position
+            bot_move = game.hint_block, game.hint_position
             mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
 
             for event in pygame.event.get():
@@ -93,19 +93,19 @@ def main():
                                 in_menu = True
                                 print("Go to menu")
                             if game.check_mouse_in_hint(event.pos):
-                                bot_greedy = Bot(game, "greedy")
-                                greedy_move = bot_greedy.auto_play_greedy(game)
+                                bot = Bot(game, "greedy")
+                                bot_move = bot.auto_play_greedy(game)
                     else:
                         #print("other game lol")
                         if event.type == KEYDOWN and event.key == K_RIGHT:
-                            greedy_move = None
+                            bot_move = None
                             current_block = None
                             game.current_grid_pos = None
-                            bot_greedy = Bot(game, "greedy")
+                            bot = Bot(game, game.player_type)
 
-                            greedy_move = bot_greedy.auto_play_astar()
-                            if(greedy_move):
-                                (current_block, (row, col)) = greedy_move
+                            bot_move = bot.auto_play()
+                            if(bot_move):
+                                (current_block, (row, col)) = bot_move
                             #print("row ", row), print("col ", col)
                             #print(current_block in game.blocks)
                             if current_block:
@@ -117,7 +117,7 @@ def main():
                                 if current_block in game.blocks:
                                     game.blocks.remove(current_block)
                                     #print("game blocks: ", len(game.blocks))
-                                    greedy_move = None
+                                    bot_move = None
                                     #print("set greedy move to none")
                                     current_block = None
                                     #print("set block to none")
@@ -155,8 +155,8 @@ def main():
                     if event.key == K_m:
                         in_menu = True
                     if event.key == K_h:
-                        bot_greedy = Bot(game, "greedy")
-                        greedy_move = bot_greedy.auto_play_greedy(game)
+                        bot = Bot(game, "greedy")
+                        bot_move = bot.auto_play_greedy(game)
         
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):
@@ -172,7 +172,7 @@ def main():
                 game.draw_placement_preview(current_block)
 
             # Draw hint preview if we asked for a hint (to be improved for more bots)
-            if greedy_move:
+            if bot_move:
                 game.draw_hint_preview()
                 
             game.draw_blocks()

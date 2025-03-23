@@ -7,7 +7,7 @@ class Menu:
         self.title_font = pygame.font.SysFont('Arial', 48)
         self.font = pygame.font.SysFont('Arial', 24)
         self.level_options = ["Level 1", "Level 2", "Level 3", "Infinite Mode"]
-        self.player_options = ["Human", "Greedy AI", "Brute Force AI", "A-star AI", "Back (B)"]
+        self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "A-star AI", "Back (B)"]
         self.current_option = 0
         self.current_menu = "level"  # "level" or "player"
         self.selected_level = None
@@ -76,4 +76,5 @@ class Menu:
         # Initialize the game with the selected level and player type
         game = Game(level + 1, player_type)
         game.player_type = player_type  # Assuming Game class can handle player_type
+        print(f"Starting game with level {level + 1} and player type {player_type}")
         return game

@@ -254,8 +254,8 @@ class Bot:
     def heuristic(self, state, goal_state):
         return (
             state.reds * 1000 -  # Prioritize fewer reds
-            state.score * 50 -
-            state.aligned_reds * 100 -  # Prioritize more aligned reds
+            state.score * 2 -
+            state.aligned_reds * 10 -  # Prioritize more aligned reds
             state.aligned_blues * 10  # Prioritize more aligned blues
         )
 
@@ -385,3 +385,16 @@ class Bot:
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
         return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+    
+
+    def auto_play(self):
+        """Commander function that finds and evaluates moves using the selected mode."""
+        if self.game.player_type == 1:
+            return self.auto_play_greedy(self.game)
+        elif self.game.player_type == 2:
+            return self.auto_play_bfs()
+        elif self.game.player_type == 4:
+            return self.auto_play_astar()
+        else:
+            print("Invalid mode. Please select 'greedy', 'astar', or 'bfs'.")
+            return None
