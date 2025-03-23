@@ -360,8 +360,8 @@ class Game:
             self.score += lines_cleared * 100
         else:
             self.simulated_score += lines_cleared * 100
-            if self.simulated_score > self.score:
-                print("aumentou")
+            #if self.simulated_score > self.score:
+            #    print("aumentou")
             
             #print("simulated score: ", self.simulated_score)
 

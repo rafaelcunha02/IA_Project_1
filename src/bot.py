@@ -155,16 +155,16 @@ class Bot:
         new_game.current_grid_pos = position
         new_game.try_place_block(block)
     
-        print("Attempting to remove block with shape:", block.shape)
-        print("Blocks before removal:", [b.shape for b in new_game.blocks])
+        #print("Attempting to remove block with shape:", block.shape)
+        #print("Blocks before removal:", [b.shape for b in new_game.blocks])
         
         for i, bloco in enumerate(new_game.blocks):
             if bloco.shape == block.shape:
                 del new_game.blocks[i]
-                print("Removed block with shape:", bloco.shape)
+                #print("Removed block with shape:", bloco.shape)
                 break
         
-        print("Blocks after removal:", [b.shape for b in new_game.blocks])
+        #print("Blocks after removal:", [b.shape for b in new_game.blocks])
     
         # Create a new Simulation object based on the modified game state
         new_game_sim = Simulation(
@@ -254,7 +254,8 @@ class Bot:
     def heuristic(self, state, goal_state):
         return (
             state.reds * 1000 -  # Prioritize fewer reds
-            state.aligned_reds * 100 +  # Prioritize more aligned reds
+            state.score * 50 -
+            state.aligned_reds * 100 -  # Prioritize more aligned reds
             state.aligned_blues * 10  # Prioritize more aligned blues
         )
 
@@ -277,7 +278,8 @@ class Bot:
             block, position, _ = move
             print(f"Move {i + 1}: Block shape: {block.shape}, Position: {position}")
     
-        (block, (row, col), simulation) = moves[0]
+        if(moves[0]):
+            (block, (row, col), simulation) = moves[0]
         # Return the first move in the sequence (if it exists)
         return (block, (row,col)) if moves else None
 
