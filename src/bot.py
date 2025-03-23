@@ -155,14 +155,16 @@ class Bot:
         new_game.current_grid_pos = position
         new_game.try_place_block(block)
     
-        # Remove the block from the list of available blocks in the copied game state
-        for bloco in new_game.blocks:
+        print("Attempting to remove block with shape:", block.shape)
+        print("Blocks before removal:", [b.shape for b in new_game.blocks])
+        
+        for i, bloco in enumerate(new_game.blocks):
             if bloco.shape == block.shape:
-                new_game.blocks.remove(bloco)
-                #print("Found and removed matching block")
+                del new_game.blocks[i]
+                print("Removed block with shape:", bloco.shape)
                 break
-    
-        #print("Blocks remaining in new_game:", new_game.blocks)
+        
+        print("Blocks after removal:", [b.shape for b in new_game.blocks])
     
         # Create a new Simulation object based on the modified game state
         new_game_sim = Simulation(
@@ -171,6 +173,7 @@ class Bot:
             aligned_reds=new_game.count_aligned_reds(block.shape, position),
             aligned_blues=new_game.count_aligned_blues(block.shape, position),
             game=new_game,  # Pass the modified game state
+            valid_moves=self.find_possible_moves(new_game)  # Find valid moves for the new state
         )
     
         return new_game_sim
@@ -178,62 +181,68 @@ class Bot:
 
 
     def a_star_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
+        # Initialize current_state's valid_moves if not set
+        if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
+            current_state.valid_moves = possible_moves
+            
         open_set = []
         closed_set = set()
         g_score = {current_state: 0}
         f_score = {current_state: self.heuristic(current_state, goal_state)}
         parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
-    
+
         open_set.append(current_state)
-    
+
         # Track the closest state to the goal
         closest_state = current_state
         closest_f_score = f_score[current_state]
-    
+
         while open_set:
             current = min(open_set, key=lambda state: f_score.get(state, float('inf')))
-            print("CURRENT: ", current)
-            print("GOAL: ", goal_state)
-    
+
             # Check if goal is reached
             if self.is_goal_state(current, goal_state):
-                print("entrou")
                 return self.reconstruct_move(parents, current)
-    
+
             open_set.remove(current)
             closed_set.add(current)
-    
+
             # Update the closest state if necessary
             if f_score[current] < closest_f_score:
                 closest_state = current
                 closest_f_score = f_score[current]
-    
+
             # Get the current depth
             _, _, current_depth = parents[current]
-    
+
             # Stop expanding if the depth limit is reached
             if current_depth >= depth_limit:
                 continue
-    
-            for move in possible_moves:
+            
+            # Use the valid_moves from the CURRENT state, not the initial state
+            if not hasattr(current, 'valid_moves') or current.valid_moves is None:
+                # If this state doesn't have valid_moves calculated, do it now
+                current.valid_moves = self.find_possible_moves(current.game)
+                
+            for move in current.valid_moves:  # Use current.valid_moves here, not current_state.valid_moves
                 (block, (row, col), simulation) = move
                 neighbor = self.simulate_move(current.game, block, (row, col))
-    
+
                 if neighbor in closed_set:
                     continue
-    
+
                 tentative_g_score = g_score[current] + self.cost(current, move)
-    
+
                 if neighbor not in open_set:
                     open_set.append(neighbor)
                 elif tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
-    
+
                 # Update scores, parent, and depth
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_state)
                 parents[neighbor] = (current, move, current_depth + 1)  # Increment depth
-    
+
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         return self.reconstruct_move(parents, closest_state)
@@ -252,18 +261,25 @@ class Bot:
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
+        moves = []  # List to store the sequence of moves
         while current in parents and parents[current][0] is not None:  # While there is a parent
             parent, move, _ = parents[current]  # Extract parent, move, and depth
-            if parent is None:  # If we've reached the start state
-                print("Move to return:", move)
-                return move  # Return the move that led to the current state
-            if parent == parents[current][0]:  # If this is the first move
-                print("Returning first move:", move)
-                (block, (row, col), simulation) = move
-                return (block, (row,col))
-            current = parent
-        print("No valid move found!")
-        return None
+            if move:  # If a move exists, add it to the list
+                moves.append(move)
+            current = parent  # Move to the parent state
+    
+        # Reverse the moves to get the sequence from start to goal
+        moves.reverse()
+    
+        # Print the sequence of moves
+        print("Sequence of moves:")
+        for i, move in enumerate(moves):
+            block, position, _ = move
+            print(f"Move {i + 1}: Block shape: {block.shape}, Position: {position}")
+    
+        (block, (row, col), simulation) = moves[0]
+        # Return the first move in the sequence (if it exists)
+        return (block, (row,col)) if moves else None
 
     def cost(self, current, move):
         # Implement logic to calculate the cost of a move
