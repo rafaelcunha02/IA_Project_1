@@ -5,7 +5,7 @@ pygame.init()
 # Game constants
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
-GRID_SIZE = 10
+GRID_SIZE = 8
 CELL_SIZE = 40
 GRID_OFFSET_X = (WINDOW_WIDTH - GRID_SIZE * CELL_SIZE) // 2
 GRID_OFFSET_Y = 100
@@ -25,7 +25,6 @@ BLOCK_TYPES = [
     [[1, 1], [1, 0]],
     [[1, 1], [0, 1]],
     [[1, 1, 1], [1, 1, 1]],
-    [[1, 1, 1], [1, 1, 1], [1,1,1]],
     [[1, 1, 1], [1, 0, 0], [1,0,0]],
     [[1, 0], [0, 1]],
     [[0, 1], [1, 0]],

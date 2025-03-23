@@ -311,7 +311,6 @@ class Bot:
 
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
-        print("bfs called")
         """Perform a BFS to find the optimal move sequence."""
         from collections import deque
         
