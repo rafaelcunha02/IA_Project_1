@@ -103,7 +103,7 @@ def main():
                             game.current_grid_pos = None
                             bot_greedy = Bot(game, "greedy")
 
-                            greedy_move = bot_greedy.auto_play_astar()
+                            greedy_move = bot_greedy.auto_play_bfs()
                             if(greedy_move):
                                 (current_block, (row, col)) = greedy_move
                             #print("row ", row), print("col ", col)

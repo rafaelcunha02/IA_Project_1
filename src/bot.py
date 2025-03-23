@@ -306,3 +306,83 @@ class Bot:
         
         depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)
+
+
+
+
+    def bfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
+        print("bfs called")
+        """Perform a BFS to find the optimal move sequence."""
+        from collections import deque
+        
+        # Initialize the BFS queue with the initial state
+        queue = deque([(initial_state, None, None, 0)])  # (state, parent, move, depth)
+        visited = set()
+        parents = {}  # Track parent relationships for path reconstruction
+        
+        # Track the closest state to the goal
+        closest_state = initial_state
+        closest_score = self.heuristic(initial_state, goal_state)
+        
+        while queue:
+            current_state, parent, move_taken, depth = queue.popleft()
+            
+            # Store the parent relationship
+            if parent is not None:
+                parents[current_state] = (parent, move_taken, depth)
+            
+            # Check if the current state is the goal state
+            if self.is_goal_state(current_state, goal_state):
+                return self.reconstruct_move(parents, current_state)
+            
+            # Stop expanding if the depth limit is reached
+            if depth >= depth_limit:
+                continue
+            
+            # Create a state key for visited tracking
+            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
+            if state_key in visited:
+                continue
+            visited.add(state_key)
+            
+            # Update the closest state if necessary
+            current_score = self.heuristic(current_state, goal_state)
+            if current_score < closest_score:
+                closest_state = current_state
+                closest_score = current_score
+            
+            # Generate all possible moves from the current state
+            if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
+                current_state.valid_moves = self.find_possible_moves(current_state.game)
+            
+            for move in current_state.valid_moves:
+                block, position, _ = move
+                next_state = self.simulate_move(current_state.game, block, position)
+                
+                # Add the next state to the queue
+                queue.append((next_state, current_state, move, depth))
+        
+        # If no goal state is found, return the move leading to the closest state
+        print("Goal state not found. Returning closest state.")
+        return self.reconstruct_move(parents, closest_state)
+
+    def auto_play_bfs(self):
+        """Commander function that finds and evaluates moves using BFS."""
+        if self.evaluate_grid() == 0:
+            return (self.game.blocks[0], (0, 0))
+        
+        possible_moves = self.find_possible_moves(self.game)
+        
+        initial_state = Simulation(
+            reds=self.game.count_reds(),
+            score=self.game.score,
+            aligned_reds=0,
+            aligned_blues=0,
+            game=self.game,
+            valid_moves=possible_moves  # Pass the valid moves to the initial state
+        )
+        
+        goal_state = Simulation(0, None, None, None, None, None)
+        
+        depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
+        return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
