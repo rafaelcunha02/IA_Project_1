@@ -49,6 +49,7 @@ class Game:
         return grid
     
 
+
     def count_aligned_reds(self, block, position):
         
         row, col = position
@@ -125,6 +126,7 @@ class Game:
         return greens
 
     def generate_blocks(self):
+        print("generating blocks")
         blocks = []
         
         # Positions for the three blocks at the bottom
@@ -134,11 +136,18 @@ class Game:
             (WINDOW_WIDTH - 180, WINDOW_HEIGHT - 120)
         ]
         
+        # Use a static index to cycle through BLOCK_TYPES
+        if not hasattr(self, 'block_index'):
+            self.block_index = 0  # Initialize the index if it doesn't exist
+    
         for i in range(3):
-            block_type = random.choice(BLOCK_TYPES)
+            block_type = BLOCK_TYPES[self.block_index]
             color = BLUE
             blocks.append(Block(block_type, color, positions[i]))
             
+            # Increment the index and wrap around if it exceeds the length of BLOCK_TYPES
+            self.block_index = (self.block_index + 1) % len(BLOCK_TYPES)
+        
         return blocks
     
     def draw_grid(self):
@@ -362,6 +371,9 @@ class Game:
             self.score += lines_cleared * 100
         else:
             self.simulated_score += lines_cleared * 100
+            #if self.simulated_score > self.score:
+            #    print("aumentou")
+            
             #print("simulated score: ", self.simulated_score)
 
         
@@ -446,6 +458,7 @@ class Game:
                 if can_place_anywhere:
                     return False
             
+            self.game_over = True
             return True
 
     
