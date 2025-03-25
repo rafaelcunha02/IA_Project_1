@@ -364,6 +364,63 @@ class Bot:
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         return self.reconstruct_move(parents, closest_state)
+    
+
+    def dfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
+        # Initialize the DFS stack with the initial state
+        stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
+        visited = set()
+        parents = {}  # Track parent relationships for path reconstruction
+        
+        # Track the closest state to the goal
+        closest_state = initial_state
+        closest_score = self.heuristic(initial_state, goal_state)
+        
+        # print(f"Initial stack: {stack}")
+        while stack:
+            current_state, parent, move_taken, depth = stack.pop()  
+
+            # Store the parent relationship
+            if parent is not None:
+                parents[current_state] = (parent, move_taken, depth)
+            
+            # Check if the current state is the goal state
+            if self.is_goal_state(current_state, goal_state):
+                return self.reconstruct_move(parents, current_state)
+            
+            # Stop expanding if the depth limit is reached
+            if depth >= depth_limit:
+                continue
+            
+            # Create a state key for visited tracking
+            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
+            if state_key in visited:
+                continue
+            visited.add(state_key)
+            
+            # Update the closest state if necessary
+            current_score = self.heuristic(current_state, goal_state)
+            if current_score < closest_score:
+                closest_state = current_state
+                closest_score = current_score
+            
+            # Generate all possible moves from the current state
+            if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
+                current_state.valid_moves = self.find_possible_moves(current_state.game)
+                print(f"Valid moves for current state: {current_state.valid_moves}")
+            
+            # For DFS, we reverse the order to explore depth-first
+            for move in reversed(current_state.valid_moves):
+                block, position, _ = move
+                next_state = self.simulate_move(current_state.game, block, position)
+                
+                # Add the next state to the stack
+                stack.append((next_state, current_state, move, depth + 1))
+        
+        # If no goal state is found, return the move leading to the closest state
+        print("Goal state not found. Returning closest state.")
+        return self.reconstruct_move(parents, closest_state)
+
 
     def auto_play_bfs(self):
         """Commander function that finds and evaluates moves using BFS."""
@@ -387,12 +444,36 @@ class Bot:
         return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
     
 
+    def auto_play_dfs(self):
+        """Commander function that finds and evaluates moves using DFS."""
+        if self.evaluate_grid() == 0:
+            return (self.game.blocks[0], (0, 0))
+        
+        possible_moves = self.find_possible_moves(self.game)
+        
+        initial_state = Simulation(
+            reds=self.game.count_reds(),
+            score=self.game.score,
+            aligned_reds=0,
+            aligned_blues=0,
+            game=self.game,
+            valid_moves=possible_moves  # Pass the valid moves to the initial state
+        )
+        
+        goal_state = Simulation(0, None, None, None, None, None)
+        
+        depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
+        return self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+    
+
     def auto_play(self):
         """Commander function that finds and evaluates moves using the selected mode."""
         if self.game.player_type == 1:
             return self.auto_play_greedy(self.game)
         elif self.game.player_type == 2:
             return self.auto_play_bfs()
+        elif self.game.player_type == 3:
+            return self.auto_play_dfs()
         elif self.game.player_type == 4:
             return self.auto_play_astar()
         else:
