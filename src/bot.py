@@ -481,7 +481,12 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        goal_state = Simulation(0, None, None, None, None, None)
+        if(self.game.level > 3 or self.game.level < 1):
+            print("LEVEL")
+            print(self.game.level)
+            goal_state = Simulation(None, float('inf'), None, None, None)
+        else:
+            goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
         return self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
