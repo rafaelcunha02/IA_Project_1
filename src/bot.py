@@ -154,17 +154,11 @@ class Bot:
         # Set the current grid position and try to place the block
         new_game.current_grid_pos = position
         new_game.try_place_block(block)
-    
-        #print("Attempting to remove block with shape:", block.shape)
-        #print("Blocks before removal:", [b.shape for b in new_game.blocks])
         
         for i, bloco in enumerate(new_game.blocks):
             if bloco.shape == block.shape:
                 del new_game.blocks[i]
-                #print("Removed block with shape:", bloco.shape)
                 break
-        
-        #print("Blocks after removal:", [b.shape for b in new_game.blocks])
     
         # Create a new Simulation object based on the modified game state
         new_game_sim = Simulation(

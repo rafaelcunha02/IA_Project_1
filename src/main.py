@@ -75,12 +75,9 @@ def main():
                                     # If all blocks are placed, generate new ones
                                     if not game.blocks:
                                         game.blocks = game.generate_blocks()
-                                        # Check if game is over
-                                        if game.check_game_over():
-                                            game.game_over = True
-                                    else:
-                                        if game.check_game_over():
-                                            game.game_over = True
+                                    # Check if game is over
+                                    if game.check_game_over():
+                                        game.game_over = True
                                 else:
                                     current_block.reset_position()
                                     
@@ -96,7 +93,6 @@ def main():
                                 bot = Bot(game, "greedy")
                                 bot_move = bot.auto_play_greedy(game)
                     else:
-                        #print("other game lol")
                         if event.type == KEYDOWN and event.key == K_RIGHT:
                             bot_move = None
                             current_block = None
@@ -106,21 +102,13 @@ def main():
                             bot_move = bot.auto_play()
                             if(bot_move):
                                 (current_block, (row, col)) = bot_move
-                            #print("row ", row), print("col ", col)
-                            #print(current_block in game.blocks)
                             if current_block:
-                                # Try to place the block on the grid
                                 game.place_block(current_block, (row, col))
-                                #print("placed")
                                 game.check_lines(False)
-                                #print("placing")
                                 if current_block in game.blocks:
                                     game.blocks.remove(current_block)
-                                    #print("game blocks: ", len(game.blocks))
                                     bot_move = None
-                                    #print("set greedy move to none")
                                     current_block = None
-                                    #print("set block to none")
                                     game.current_grid_pos = None
                                 else:
                                     print("Error: current_block not in game.blocks")
@@ -134,11 +122,8 @@ def main():
                                 if not game.blocks:
                                     game.blocks = game.generate_blocks()
                                     # Check if game is over
-                                    if game.check_game_over():
-                                        game.game_over = True
-                                else:
-                                    if game.check_game_over():
-                                        game.game_over = True
+                                if game.check_game_over():
+                                    game.game_over = True
                         elif event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
                                 in_menu = True
