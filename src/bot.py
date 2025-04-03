@@ -178,7 +178,7 @@ class Bot:
     
 
 
-    def a_star_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
+    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
         # Initialize current_state's valid_moves if not set
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
@@ -262,7 +262,6 @@ class Bot:
     def heuristic(self, state, goal_state):
         # If there are no valid moves, return a very high score to deprioritize this state
 
-
         if state.game.game_over:
             return float('inf')  # Infinite score for states with no valid moves
 
@@ -329,8 +328,8 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
-        depth_limit = 200
-        return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)
+        depth_limit = 10
+        return self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, depth_limit)
 
 
 
@@ -347,9 +346,10 @@ class Bot:
         closest_state = initial_state
         closest_score = self.heuristic(initial_state, goal_state)
         
+        counter = 0
         while queue:
             current_state, parent, move_taken, depth = queue.popleft()
-            
+            counter += 1
             # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
@@ -389,6 +389,7 @@ class Bot:
         
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
+        print(counter)
         return self.reconstruct_move(parents, closest_state)
     
 
@@ -403,8 +404,10 @@ class Bot:
         closest_score = self.heuristic(initial_state, goal_state)
         
         # print(f"Initial stack: {stack}")
+        counter = 0
         while stack:
             current_state, parent, move_taken, depth = stack.pop()  
+            counter += 1
 
             # Store the parent relationship
             if parent is not None:
@@ -445,6 +448,7 @@ class Bot:
         
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
+        print(counter)
         return self.reconstruct_move(parents, closest_state)
 
 
@@ -473,7 +477,6 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
-        depth_limit = 5
         print(depth_limit)
         return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
     
@@ -502,7 +505,7 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
-        return self.dfs_algorithm(initial_state, goal_state, possible_moves, 5)
+        return self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
     
 
     def auto_play(self):
