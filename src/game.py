@@ -126,7 +126,6 @@ class Game:
         return greens
 
     def generate_blocks(self):
-        print("generating blocks")
         blocks = []
         
         # Positions for the three blocks at the bottom
@@ -149,6 +148,8 @@ class Game:
             self.block_index = (self.block_index + 1) % len(BLOCK_TYPES)
         
         return blocks
+    
+
     
     def draw_grid(self):
         # Draw the grid background

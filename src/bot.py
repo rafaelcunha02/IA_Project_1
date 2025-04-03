@@ -161,6 +161,9 @@ class Bot:
         for i, bloco in enumerate(new_game.blocks):
             if bloco.shape == block.shape:
                 del new_game.blocks[i]
+                if not new_game.blocks:
+                    new_game.blocks = new_game.generate_blocks()
+                
                 #print("Removed block with shape:", bloco.shape)
                 break
         
@@ -201,7 +204,9 @@ class Bot:
             current = min(open_set, key=lambda state: f_score.get(state, float('inf')))
 
             # Check if goal is reached
-            if self.is_goal_state(current, goal_state):
+            print(current.reds)
+            if current.reds == 0:
+                print("goal state")
                 return self.reconstruct_move(parents, current)
 
             open_set.remove(current)
@@ -223,25 +228,33 @@ class Bot:
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
                 # If this state doesn't have valid_moves calculated, do it now
                 current.valid_moves = self.find_possible_moves(current.game)
-                
-            for move in current.valid_moves:  # Use current.valid_moves here, not current_state.valid_moves
+            print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
+
+                # Or more detailed tracking inside the move loop:
+            for move in current.valid_moves:
+                 # Current code...
                 (block, (row, col), simulation) = move
                 neighbor = self.simulate_move(current.game, block, (row, col))
-
-                if neighbor in closed_set:
-                    continue
+                # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
 
                 tentative_g_score = g_score[current] + self.cost(current, move)
-
-                if neighbor not in open_set:
-                    open_set.append(neighbor)
-                elif tentative_g_score >= g_score.get(neighbor, float('inf')):
+                
+                # If this path to neighbor is worse than one we've already found, skip
+                if tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
-
-                # Update scores, parent, and depth
+                    
+                # We found a better path to the neighbor
+                parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_state)
-                parents[neighbor] = (current, move, current_depth + 1)  # Increment depth
+                
+                if neighbor in closed_set:
+                    # Important: move the neighbor from closed back to open set
+                    # since we found a better path to it
+                    closed_set.remove(neighbor)
+                    
+                if neighbor not in open_set:
+                    open_set.append(neighbor)
 
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
@@ -320,7 +333,8 @@ class Bot:
         else:
             goal_state = Simulation(0, None, None, None, None)
         
-        depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
+        # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
+        depth_limit = 200
         return self.a_star_algorithm(current_state, goal_state, possible_moves, depth_limit)
 
 
@@ -346,11 +360,13 @@ class Bot:
                 parents[current_state] = (parent, move_taken, depth)
             
             # Check if the current state is the goal state
-            if self.is_goal_state(current_state, goal_state):
+            if current_state.reds == 0:
+                print("goal state found")
                 return self.reconstruct_move(parents, current_state)
             
             # Stop expanding if the depth limit is reached
             if depth >= depth_limit:
+                print("depth here: ", depth)
                 continue
             
             # Create a state key for visited tracking
@@ -374,7 +390,7 @@ class Bot:
                 next_state = self.simulate_move(current_state.game, block, position)
                 
                 # Add the next state to the queue
-                queue.append((next_state, current_state, move, depth))
+                queue.append((next_state, current_state, move, depth + 1))
         
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
@@ -462,6 +478,8 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
+        depth_limit = 5
+        print(depth_limit)
         return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
     
 
@@ -489,7 +507,7 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
-        return self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        return self.dfs_algorithm(initial_state, goal_state, possible_moves, 5)
     
 
     def auto_play(self):
