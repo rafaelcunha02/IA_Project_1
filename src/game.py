@@ -269,45 +269,24 @@ class Game:
         screen.blit(overlay, (0, 0))
         if(self.level not in [1,2,3]):
             game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-            score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
-            menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-
-            screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
-                                        WINDOW_HEIGHT // 2 - 60))
-            screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
-                                    WINDOW_HEIGHT // 2))
-            screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
-                                    WINDOW_HEIGHT // 2 + 60))
-
-
         else:
             if (self.reds == 0):
                 game_over_text = font.render("YOU WIN", True, (255, 0, 0))
-                score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
-                menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-                next_level = font.render("Press N to go to Next Level", True, (255, 255, 255))
-
-
-                screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
-                                            WINDOW_HEIGHT // 2 - 60))
-                screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
-                                        WINDOW_HEIGHT // 2))
-                screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
-                                        WINDOW_HEIGHT // 2 + 60))
-                if self.level < 3:
-                    screen.blit(next_level, (WINDOW_WIDTH // 2 - next_level.get_width() // 2,
-                                            WINDOW_HEIGHT // 2 + 120))
             else:
                 game_over_text = font.render("YOU LOSE", True, (255, 0, 0))
-                score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
-                menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
-                
-                screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
-                                            WINDOW_HEIGHT // 2 - 60))
-                screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
-                                        WINDOW_HEIGHT // 2))
-                screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
-                                        WINDOW_HEIGHT // 2 + 60))
+        score_text = font.render(f"Final Score: {self.score}", True, (255, 255, 255))
+        menu_text = font.render("Press M to go to Menu", True, (255, 255, 255))
+        next_level = font.render("Press N to go to Next Level", True, (255, 255, 255))
+
+        screen.blit(game_over_text, (WINDOW_WIDTH // 2 - game_over_text.get_width() // 2, 
+                                    WINDOW_HEIGHT // 2 - 60))
+        screen.blit(score_text, (WINDOW_WIDTH // 2 - score_text.get_width() // 2, 
+                                WINDOW_HEIGHT // 2))
+        screen.blit(menu_text, (WINDOW_WIDTH // 2 - menu_text.get_width() // 2, 
+                                WINDOW_HEIGHT // 2 + 60))
+        if(self.level in [1,2] and self.reds == 0):
+            screen.blit(next_level, (WINDOW_WIDTH // 2 - next_level.get_width() // 2,
+                                    WINDOW_HEIGHT // 2 + 120))
     
     def can_place_block(self, block, grid_pos):
         if not grid_pos:
@@ -343,7 +322,6 @@ class Game:
     def check_lines(self, simulated):
         lines_cleared = 0
         
-        #print("CALLED CHECKLINES ", simulated)
         # Check horizontal lines
         rows_to_clear = []
         for row in range(GRID_SIZE):
@@ -372,11 +350,6 @@ class Game:
             self.score += lines_cleared * 100
         else:
             self.simulated_score += lines_cleared * 100
-            #if self.simulated_score > self.score:
-            #    print("aumentou")
-            
-            #print("simulated score: ", self.simulated_score)
-
         
         return lines_cleared > 0
     
@@ -407,26 +380,18 @@ class Game:
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
             self.check_lines(False)
-            # Check if game is over after placing the block
-            #if self.check_game_over():
-             #   self.game_over = True
             return True
         
         return False
     
     def simulate_try_place_block(self, block):
-        #print("calling simulated placement")
 
         self.can_place_current = self.can_place_block(block, self.current_grid_pos)
 
         if self.can_place_current and self.current_grid_pos:
-            #print("calling simulated placement 2")
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
             self.check_lines(True)
-            # Check if game is over after placing the block
-            #if self.check_game_over():
-                #   self.game_over = True
             return True
         
         return False
@@ -441,23 +406,14 @@ class Game:
     def check_game_over(self):
         self.reds = self.count_reds()
         
-        # For each block, check if it can be placed anywhere on the grid
-        #print("level: ", self.level)
         if ((self.level in [1,2,3]) and (self.reds == 0)):
             return self.check_wins_finite_mode()
         else:
             for block in self.blocks:
-                can_place_anywhere = False
                 for row in range(GRID_SIZE):
                     for col in range(GRID_SIZE):
                         if self.can_place_block(block, (row, col)):
-                            can_place_anywhere = True
-                            break
-                    if can_place_anywhere:
-                        break
-                
-                if can_place_anywhere:
-                    return False
+                            return False
             
             self.game_over = True
             return True
@@ -465,6 +421,7 @@ class Game:
     
     def reset(self):
         self.grid = self.load_level(self.level)
+        self.block_index = 0
         self.blocks = self.generate_blocks()
         self.score = 0
         self.game_over = False
