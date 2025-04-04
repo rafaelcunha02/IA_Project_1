@@ -333,7 +333,8 @@ class Bot:
         # Implement logic to calculate the cost of a move
         return 1  # Example cost for each move
     
-    def auto_play_greedy_bestfs(self):
+    def auto_play_greedy_bestfs(self, iterative_deepening=True):
+        print("greedy bestfs")
         """Commander function that finds and evaluates moves using A* algorithm."""
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
@@ -356,11 +357,18 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
-        for i in range(3, 80, 4):
-            goal_state_reached = [False]
-            a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, i, goal_state_reached)
-            if(goal_state_reached[0] == True):
-                return a
+        if(iterative_deepening):
+            for i in range(3, 80, 4):
+                goal_state_reached = [False]
+                a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, i, goal_state_reached)
+                if(goal_state_reached[0] == True):
+                    return a
+        else:
+            a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, 999, [False])   
+            (block, pos, sim) = a[0]
+            self.game.hint_block = block
+            self.game.hint_position = pos
+            return a
 
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
