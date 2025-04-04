@@ -18,7 +18,7 @@ class Game:
         self.current_grid_pos = None
         self.can_place_current = False
         self.menu_button_rect = pygame.Rect(WINDOW_WIDTH - 200, 20, 200, 40)  # rectangle for the menu button
-        self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 83, 80, 200, 40)  # rectangle for the hint button
+        self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 213, 80, 200, 40)  # rectangle for the hint button
         self.hint_block = None
         self.hint_position = None
         self.solution = []
@@ -252,11 +252,11 @@ class Game:
         screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
     
     def draw_hint_button(self):
-        hint_text = font.render("Hint (H)", True, (255, 255, 255))
+        hint_text = font.render("Greedy BestFS Hint (H)", True, (255, 255, 255))
         screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
 
     def draw_hint_button_highlighted(self):
-        hint_text = font.render("Hint (H)", True, (255, 255, 0))
+        hint_text = font.render("Greedy BestFS Hint (H)", True, (255, 255, 0))
         screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
 
     def check_mouse_in_hint(self, pos):
