@@ -5,6 +5,7 @@ from game import Game
 from menu import Menu
 from constants import BACKGROUND_COLOR, title_font, screen, WINDOW_WIDTH, WINDOW_HEIGHT, clock
 from bot import Bot 
+import time
 
 pygame.init()
 
@@ -99,31 +100,29 @@ def main():
                             game.current_grid_pos = None
                             bot = Bot(game, game.player_type)
 
-                            bot_move = bot.auto_play()
-                            if(bot_move):
-                                (current_block, (row, col)) = bot_move
-                            if current_block:
-                                game.place_block(current_block, (row, col))
-                                game.check_lines(False)
-                                if current_block in game.blocks:
-                                    game.blocks.remove(current_block)
-                                    bot_move = None
-                                    current_block = None
-                                    game.current_grid_pos = None
-                                else:
-                                    print("Error: current_block not in game.blocks")
-                                    print("game blocks: ")
-                                    for block in game.blocks:
-                                        print(block.shape)
-                                    print("current_block ", current_block.shape)
-                            
+                            bot_moves = bot.auto_play()
+                            for current_block, (row, col), _ in bot_moves:
+                                if current_block:
+                                    game.place_block(current_block, (row, col))
+                                    game.check_lines(False)
+                                    if current_block in game.blocks:
+                                        game.blocks.remove(current_block)
+                                        game.current_grid_pos = None
+                                    else:
+                                        print("Error: current_block not in game.blocks")
+                                        print("game blocks: ")
+                                        for block in game.blocks:
+                                            print(block.shape)
+                                        print("current_block ", current_block.shape)
                                 
-                                # If all blocks are placed, generate new ones
-                                if not game.blocks:
-                                    game.blocks = game.generate_blocks()
-                                    # Check if game is over
-                                if game.check_game_over():
-                                    game.game_over = True
+                                    
+                                    # If all blocks are placed, generate new ones
+                                    if not game.blocks:
+                                        game.blocks = game.generate_blocks()
+                                        # Check if game is over
+                                    if game.check_game_over():
+                                        game.game_over = True
+                                time.sleep(2)
                         elif event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
                                 in_menu = True

@@ -327,10 +327,7 @@ class Bot:
             block, position, _ = move
             print(f"Move {i + 1}: Block shape: {block.shape}, Position: {position}")
     
-        if(moves[0]):
-            (block, (row, col), simulation) = moves[0]
-        # Return the first move in the sequence (if it exists)
-        return (block, (row,col)) if moves else None
+        return moves
 
     def cost(self, current, move):
         # Implement logic to calculate the cost of a move
