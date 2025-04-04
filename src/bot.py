@@ -181,7 +181,7 @@ class Bot:
     
 
 
-    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
+    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit, goal_state_reached):
         # Initialize current_state's valid_moves if not set
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
@@ -205,6 +205,7 @@ class Bot:
             print(current.reds)
             if current.reds == 0:
                 print("goal state")
+                goal_state_reached[0] = True
                 return self.reconstruct_move(parents, current)
 
             open_set.remove(current)
@@ -280,6 +281,33 @@ class Bot:
             state.aligned_reds * 10 -  # Then prioritize more aligned reds
             state.aligned_blues * 10  # Then prioritize more aligned blues
         )
+    
+    def heuristic_astar(self, state):
+        # Count the number of red squares remaining
+        red_squares = state.reds
+
+        # Count the number of rows and columns with red squares
+        rows_with_reds = set()
+        cols_with_reds = set()
+        for row in range(len(state.game.grid)):
+            for col in range(len(state.game.grid[row])):
+                if state.game.grid[row][col] == (255, 0, 0):  # Red square
+                    rows_with_reds.add(row)
+                    cols_with_reds.add(col)
+
+        # Estimate the minimum number of moves required to clear all rows and columns with red squares
+        rows_to_clear = len(rows_with_reds)
+        cols_to_clear = len(cols_with_reds)
+
+        # Assume that each move can clear at most one row or column
+        moves_to_clear_reds = max(rows_to_clear, cols_to_clear)
+
+        # Add a penalty for isolated red squares (red squares not aligned with others)
+        isolated_reds = red_squares - (rows_to_clear + cols_to_clear)
+        penalty_for_isolated_reds = max(0, isolated_reds // 2)
+
+        # Final heuristic value
+        return moves_to_clear_reds + penalty_for_isolated_reds
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
@@ -331,8 +359,12 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
-        depth_limit = 10
-        return self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, depth_limit)
+        for i in range(3, 80, 4):
+            goal_state_reached = [False]
+            a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, i, goal_state_reached)
+            if(goal_state_reached[0] == True):
+                return a
+
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
         """Perform a BFS to find the optimal move sequence."""
@@ -516,7 +548,7 @@ class Bot:
         open_set = []
         closed_set = set()
         g_score = {current_state: 0}
-        f_score = {current_state: self.heuristic(current_state, goal_state)}
+        f_score = {current_state: self.heuristic_astar(current_state)}
         parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
 
         open_set.append(current_state)
@@ -571,7 +603,7 @@ class Bot:
                 # We found a better path to the neighbor
                 parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_state)
+                f_score[neighbor] = g_score[neighbor] + self.heuristic_astar(neighbor)
                 
                 if neighbor in closed_set:
                     # Important: move the neighbor from closed back to open set
