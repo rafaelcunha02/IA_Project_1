@@ -21,6 +21,7 @@ class Game:
         self.hint_button_rect = pygame.Rect(WINDOW_WIDTH - 83, 80, 200, 40)  # rectangle for the hint button
         self.hint_block = None
         self.hint_position = None
+        self.solution = []
         
 
     
@@ -428,3 +429,4 @@ class Game:
         self.current_grid_pos = None
         self.can_place_current = False
         self.reds = self.count_reds()
+        self.solution = []

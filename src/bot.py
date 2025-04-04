@@ -326,7 +326,7 @@ class Bot:
         for i, move in enumerate(moves):
             block, position, _ = move
             print(f"Move {i + 1}: Block shape: {block.shape}, Position: {position}")
-    
+        # Return the first move in the sequence (if it exists)
         return moves
 
     def cost(self, current, move):
@@ -334,6 +334,10 @@ class Bot:
         return 1  # Example cost for each move
     
     def auto_play_greedy_bestfs(self):
+        if self.game.solution != []:
+            self.game.solution.pop(0)
+            print(self.game.solution[0])
+            return self.game.solution
         """Commander function that finds and evaluates moves using A* algorithm."""
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
@@ -360,6 +364,7 @@ class Bot:
             goal_state_reached = [False]
             a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, i, goal_state_reached)
             if(goal_state_reached[0] == True):
+                self.game.solution = a
                 return a
 
 

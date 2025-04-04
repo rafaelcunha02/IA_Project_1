@@ -38,6 +38,11 @@ def main():
             bot_move = game.hint_block, game.hint_position
             mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
 
+            bot_move = None
+            current_block = None
+            game.current_grid_pos = None
+            bot = Bot(game, game.player_type)
+
             for event in pygame.event.get():
                 if event.type in (MOUSEMOTION, MOUSEBUTTONDOWN, MOUSEBUTTONUP):
                     if game.check_mouse_in_go_to_menu(event.pos):
@@ -94,36 +99,7 @@ def main():
                                 bot = Bot(game, "greedy")
                                 bot_move = bot.auto_play_greedy(game)
                     else:
-                        if event.type == KEYDOWN and event.key == K_RIGHT:
-                            bot_move = None
-                            current_block = None
-                            game.current_grid_pos = None
-                            bot = Bot(game, game.player_type)
-
-                            bot_moves = bot.auto_play()
-                            for current_block, (row, col), _ in bot_moves:
-                                if current_block:
-                                    game.place_block(current_block, (row, col))
-                                    game.check_lines(False)
-                                    if current_block in game.blocks:
-                                        game.blocks.remove(current_block)
-                                        game.current_grid_pos = None
-                                    else:
-                                        print("Error: current_block not in game.blocks")
-                                        print("game blocks: ")
-                                        for block in game.blocks:
-                                            print(block.shape)
-                                        print("current_block ", current_block.shape)
-                                
-                                    
-                                    # If all blocks are placed, generate new ones
-                                    if not game.blocks:
-                                        game.blocks = game.generate_blocks()
-                                        # Check if game is over
-                                    if game.check_game_over():
-                                        game.game_over = True
-                                time.sleep(2)
-                        elif event.type == MOUSEBUTTONUP:
+                        if event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
                                 in_menu = True
                                 print("Go to menu")
@@ -177,6 +153,26 @@ def main():
                 game.draw_game_over()
             title_text = title_font.render("Block Blast", True, (255, 255, 255))
             screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 20))
+
+            if(game.player_type != 0 and (not game.game_over)):
+                game.draw_grid()
+                print("A")
+                bot_moves = bot.auto_play()
+                current_block, (row, col), _ = bot_moves[0]
+                game.place_block(current_block, (row, col))
+                game.check_lines(False)
+                for block in game.blocks:
+                    if current_block.shape == block.shape:
+                        game.blocks.remove(block)
+                        game.current_grid_pos = None
+                
+                # If all blocks are placed, generate new ones
+                if not game.blocks:
+                    game.blocks = game.generate_blocks()
+                    # Check if game is over
+                if game.check_game_over():
+                    game.game_over = True
+                time.sleep(1)
             
             pygame.display.flip()
             clock.tick(60)
