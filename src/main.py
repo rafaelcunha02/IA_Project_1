@@ -116,7 +116,6 @@ def main():
                         in_menu = True
                     if event.key == K_h:
                         bot = Bot(game, "greedy")
-                        print("lalala")
                         bot_move = bot.auto_play_greedy_bestfs(False)
         
             # Check if the mouse is in the "Go to menu" area
@@ -157,7 +156,10 @@ def main():
 
             if(game.player_type != 0 and (not game.game_over)):
                 game.draw_grid()
-                print("A")
+                game.draw_blocks()
+                game.draw_score()
+                game.draw_remaining_reds()
+                pygame.display.flip()  # Update the display to show the current state
                 bot_moves = bot.auto_play()
                 current_block, (row, col), _ = bot_moves[0]
                 game.place_block(current_block, (row, col))

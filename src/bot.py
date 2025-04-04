@@ -628,6 +628,11 @@ class Bot:
     
     def auto_play_astar(self):
         """Commander function that finds and evaluates moves using A* algorithm."""
+        if(self.game.solution != []):
+            self.game.solution.pop(0)
+            print(self.game.solution[0])
+            return self.game.solution
+        
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
         
@@ -650,7 +655,8 @@ class Bot:
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         depth_limit = 10
-        return self.astar_algorithm(current_state, goal_state, possible_moves, depth_limit)
+        self.game.solution = self.astar_algorithm(current_state, goal_state, possible_moves, depth_limit)
+        return self.game.solution
     
 
     def auto_play(self):
