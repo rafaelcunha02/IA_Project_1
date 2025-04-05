@@ -272,7 +272,7 @@ class Bot:
         return (
             state.reds * 1000 -  # Prioritize fewer reds
             state.score * 2 -    # Then prioritize more score
-            state.aligned_reds * 10 -  # Then prioritize more aligned reds
+            state.aligned_reds * 100 -  # Then prioritize more aligned reds
             state.aligned_blues * 10  # Then prioritize more aligned blues
         )
     
@@ -296,12 +296,8 @@ class Bot:
         # Assume that each move can clear at most one row or column
         moves_to_clear_reds = max(rows_to_clear, cols_to_clear)
 
-        # Add a penalty for isolated red squares (red squares not aligned with others)
-        isolated_reds = red_squares - (rows_to_clear + cols_to_clear)
-        penalty_for_isolated_reds = max(0, isolated_reds // 2)
-
         # Final heuristic value
-        return moves_to_clear_reds + penalty_for_isolated_reds
+        return moves_to_clear_reds
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
@@ -415,7 +411,7 @@ class Bot:
         return None
     
 
-    def dfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
+    def dfs_algorithm(self, initial_state, goal_state, possible_moves):
         # Initialize the DFS stack with the initial state
         stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
         visited = set()
@@ -433,10 +429,6 @@ class Bot:
             # Check if the current state is the goal state
             if self.is_goal_state(current_state, goal_state):
                 return self.reconstruct_move(parents, current_state)
-            
-            # Stop expanding if the depth limit is reached
-            if depth >= depth_limit:
-                continue
             
             # Create a state key for visited tracking
             state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
@@ -543,7 +535,7 @@ class Bot:
         )
         
 
-        if(self.game.level > 3 or self.game.level < 1):
+        if(self.game.level > 4 or self.game.level < 1):
             print("LEVEL")
             print(self.game.level)
             goal_state = Simulation(None, float('inf'), None, None, None)
@@ -570,15 +562,14 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        if(self.game.level > 3 or self.game.level < 1):
+        if(self.game.level > 4 or self.game.level < 1):
             print("LEVEL")
             print(self.game.level)
             goal_state = Simulation(None, float('inf'), None, None, None)
         else:
             goal_state = Simulation(0, None, None, None, None)
         
-        depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
-        self.game.solution = self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        self.game.solution = self.dfs_algorithm(initial_state, goal_state, possible_moves)
         return self.game.solution
     
     def auto_play_iterative_deepning(self):
@@ -602,14 +593,14 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        if(self.game.level > 3 or self.game.level < 1):
+        if(self.game.level > 4 or self.game.level < 1):
             print("LEVEL")
             print(self.game.level)
             goal_state = Simulation(None, float('inf'), None, None, None)
         else:
             goal_state = Simulation(0, None, None, None, None)
         
-        for i in range(3, 80, 4):
+        for i in range(1, 9999999, 1):
                 goal_state_reached = [False]
                 a = self.iterative_deepning_algorithm(initial_state, goal_state, possible_moves, i, goal_state_reached)
                 if(goal_state_reached[0] == True):
