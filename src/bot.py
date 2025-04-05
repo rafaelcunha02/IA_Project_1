@@ -277,9 +277,6 @@ class Bot:
         )
     
     def heuristic_astar(self, state):
-        # Count the number of red squares remaining
-        red_squares = state.reds
-
         # Count the number of rows and columns with red squares
         rows_with_reds = set()
         cols_with_reds = set()
@@ -294,7 +291,7 @@ class Bot:
         cols_to_clear = len(cols_with_reds)
 
         # Assume that each move can clear at most one row or column
-        moves_to_clear_reds = max(rows_to_clear, cols_to_clear)
+        moves_to_clear_reds = min(rows_to_clear, cols_to_clear)
 
         # Final heuristic value
         return moves_to_clear_reds
