@@ -98,6 +98,10 @@ def main():
                             if game.check_mouse_in_hint(event.pos):
                                 bot = Bot(game, "greedy")
                                 bot_move = bot.auto_play_greedy_bestfs(False)
+                        elif event.type == KEYDOWN:
+                            if event.key == K_h:
+                                bot = Bot(game, "greedy")
+                                bot_move = bot.auto_play_greedy_bestfs()
                     if (game.player_type == 1):
                         if event.type == KEYDOWN and event.key == K_RIGHT:
                             bot_move = None
@@ -146,9 +150,6 @@ def main():
                             game.reset()
                     if event.key == K_m:
                         in_menu = True
-                    if event.key == K_h:
-                        bot = Bot(game, "greedy")
-                        bot_move = bot.auto_play_greedy_bestfs(False)
         
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):

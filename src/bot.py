@@ -181,7 +181,7 @@ class Bot:
     
 
 
-    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit, goal_state_reached):
+    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
         # Initialize current_state's valid_moves if not set
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
@@ -205,7 +205,6 @@ class Bot:
             print(current.reds)
             if current.reds == 0:
                 print("goal state")
-                goal_state_reached[0] = True
                 return self.reconstruct_move(parents, current)
 
             open_set.remove(current)
@@ -257,7 +256,8 @@ class Bot:
 
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
-        return self.reconstruct_move(parents, closest_state)
+        a = self.reconstruct_move(parents, closest_state)
+        return a[0]
     
     def is_goal_state(self, state, goal_state):
         # Custom logic to check if the goal is reached
@@ -333,11 +333,8 @@ class Bot:
         # Implement logic to calculate the cost of a move
         return 1  # Example cost for each move
     
-    def auto_play_greedy_bestfs(self, iterative_deepening=True):
-        if self.game.solution != []:
-            self.game.solution.pop(0)
-            print(self.game.solution[0])
-            return self.game.solution
+    def auto_play_greedy_bestfs(self):
+        
         """Commander function that finds and evaluates moves using A* algorithm."""
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
@@ -359,20 +356,11 @@ class Bot:
         else:
             goal_state = Simulation(0, None, None, None, None)
         
-        # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
-        if(iterative_deepening):
-            for i in range(3, 80, 4):
-                goal_state_reached = [False]
-                a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, i, goal_state_reached)
-                if(goal_state_reached[0] == True):
-                    self.game.solution = a
-                    return a
-        else:
-            a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, 999, [False])   
-            (block, pos, sim) = a[0]
-            self.game.hint_block = block
-            self.game.hint_position = pos
-            return a
+        a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, 999)   
+        (block, (row, col), sim) = a[0]
+        self.game.hint_block = block
+        self.game.hint_position = (row, col)
+        return (block, (row, col))
 
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves, depth_limit):
@@ -456,6 +444,68 @@ class Bot:
             
             # Check if the current state is the goal state
             if self.is_goal_state(current_state, goal_state):
+
+                return self.reconstruct_move(parents, current_state)
+            
+            # Stop expanding if the depth limit is reached
+            if depth >= depth_limit:
+                continue
+            
+            # Create a state key for visited tracking
+            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
+            if state_key in visited:
+                continue
+            counter += 1
+            visited.add(state_key)
+            
+            # Update the closest state if necessary
+            current_score = self.heuristic(current_state, goal_state)
+            if current_score < closest_score:
+                closest_state = current_state
+                closest_score = current_score
+            
+            # Generate all possible moves from the current state
+            if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
+                current_state.valid_moves = self.find_possible_moves(current_state.game)
+                print(f"Valid moves for current state: {current_state.valid_moves}")
+            
+            # For DFS, we reverse the order to explore depth-first
+            for move in reversed(current_state.valid_moves):
+                block, position, _ = move
+                next_state = self.simulate_move(current_state.game, block, position, depth)
+                
+                # Add the next state to the stack
+                stack.append((next_state, current_state, move, depth + 1))
+        
+        # If no goal state is found, return the move leading to the closest state
+        print("Goal state not found. Returning closest state.")
+        print(counter)
+        return self.reconstruct_move(parents, closest_state)
+    
+    def iterative_deepning_algorithm(self, initial_state, goal_state, possible_moves, depth_limit, goal_state_reached):
+
+        # Initialize the DFS stack with the initial state
+        stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
+        visited = set()
+        parents = {}  # Track parent relationships for path reconstruction
+        
+        # Track the closest state to the goal
+        closest_state = initial_state
+        closest_score = self.heuristic(initial_state, goal_state)
+        
+        # print(f"Initial stack: {stack}")
+        counter = 0
+        while stack:
+            current_state, parent, move_taken, depth = stack.pop()  
+
+            # Store the parent relationship
+            if parent is not None:
+                parents[current_state] = (parent, move_taken, depth)
+            
+            # Check if the current state is the goal state
+            if self.is_goal_state(current_state, goal_state):
+                print("goal state")
+                goal_state_reached[0] = True
                 return self.reconstruct_move(parents, current_state)
             
             # Stop expanding if the depth limit is reached
@@ -550,6 +600,41 @@ class Bot:
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
         self.game.solution = self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
         return self.game.solution
+    
+    def auto_play_iterative_deepning(self):
+        """Commander function that finds and evaluates moves using DFS."""
+        if self.game.solution != []:
+            self.game.solution.pop(0)
+            print(self.game.solution[0])
+            return self.game.solution
+        
+        if self.evaluate_grid() == 0:
+            return (self.game.blocks[0], (0, 0))
+        
+        possible_moves = self.find_possible_moves(self.game)
+        
+        initial_state = Simulation(
+            reds=self.game.count_reds(),
+            score=self.game.score,
+            aligned_reds=0,
+            aligned_blues=0,
+            game=self.game,
+            valid_moves=possible_moves  # Pass the valid moves to the initial state
+        )
+        
+        if(self.game.level > 3 or self.game.level < 1):
+            print("LEVEL")
+            print(self.game.level)
+            goal_state = Simulation(None, float('inf'), None, None, None)
+        else:
+            goal_state = Simulation(0, None, None, None, None)
+        
+        for i in range(3, 80, 4):
+                goal_state_reached = [False]
+                a = self.iterative_deepning_algorithm(initial_state, goal_state, possible_moves, i, goal_state_reached)
+                if(goal_state_reached[0] == True):
+                    self.game.solution = a
+                    return a
     
     def astar_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
         # Initialize current_state's valid_moves if not set
@@ -664,13 +749,13 @@ class Bot:
     def auto_play(self):
         """Commander function that finds and evaluates moves using the selected mode."""
         if self.game.player_type == 1:
-            return self.auto_play_greedy(self.game)
+            return self.auto_play_greedy_bestfs()
         elif self.game.player_type == 2:
             return self.auto_play_bfs()
         elif self.game.player_type == 3:
             return self.auto_play_dfs()
         elif self.game.player_type == 4:
-            return self.auto_play_greedy_bestfs()
+            return self.auto_play_iterative_deepning()
         elif self.game.player_type == 5:
             return self.auto_play_astar()
         else:
