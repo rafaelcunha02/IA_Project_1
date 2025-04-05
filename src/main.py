@@ -82,7 +82,7 @@ def main():
                                     if not game.blocks:
                                         game.blocks = game.generate_blocks()
                                     # Check if game is over
-                                    if game.check_game_over():
+                                    if game.check_game_over(game.grid_size):
                                         game.game_over = True
                                 else:
                                     current_block.reset_position()
@@ -117,7 +117,7 @@ def main():
                                     (current_block, (row, col)) = bot_move
                                 if current_block:
                                     game.place_block(current_block, (row, col))
-                                    game.check_lines(False)
+                                    game.check_lines(False, game.grid_size)
                                     if current_block in game.blocks:
                                         game.blocks.remove(current_block)
                                         bot_move = None
@@ -135,7 +135,7 @@ def main():
                                     if not game.blocks:
                                         game.blocks = game.generate_blocks()
                                         # Check if game is over
-                                    if game.check_game_over():
+                                    if game.check_game_over(game.grid_size):
                                         game.game_over = True
                             if event.key == K_m:
                                 in_menu = True
@@ -163,15 +163,15 @@ def main():
                 is_in_hint = True
             
             # Draw the game
-            game.draw_grid()
+            game.draw_grid(game.grid_size)
             
             # Draw placement preview if we're dragging a block
             if current_block and game.current_grid_pos:
-                game.draw_placement_preview(current_block)
+                game.draw_placement_preview(current_block, game.grid_size)
 
             # Draw hint preview if we asked for a hint (to be improved for more bots)
             if bot_move:
-                game.draw_hint_preview()
+                game.draw_hint_preview(game.level)
                 
             game.draw_blocks()
             game.draw_score()
@@ -195,7 +195,7 @@ def main():
             screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 20))
 
             if(game.player_type not in {0, 1} and (not game.game_over)):
-                game.draw_grid()
+                game.draw_grid(game.grid_size)
                 game.draw_blocks()
                 game.draw_score()
                 game.draw_remaining_reds()
@@ -203,7 +203,7 @@ def main():
                 bot_moves = bot.auto_play()
                 current_block, (row, col), _ = bot_moves[0]
                 game.place_block(current_block, (row, col))
-                game.check_lines(False)
+                game.check_lines(False, game.grid_size)
                 for block in game.blocks:
                     if current_block.shape == block.shape:
                         game.blocks.remove(block)
@@ -213,7 +213,7 @@ def main():
                 if not game.blocks:
                     game.blocks = game.generate_blocks()
                     # Check if game is over
-                if game.check_game_over():
+                if game.check_game_over(game.grid_size):
                     game.game_over = True
                 time.sleep(1)
             

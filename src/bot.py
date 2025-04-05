@@ -26,9 +26,9 @@ class Bot:
         for block in game.blocks:
             for row in range(GRID_SIZE):
                 for col in range(GRID_SIZE):
-                    if not game.can_place_block(block, (row, col)):
+                    if not game.can_place_block(block, (row, col), game.grid_size):
                         continue
-                    
+                        
                     original_grid = [row[:] for row in game.grid]
                     original_score = game.score
                     

@@ -10,7 +10,11 @@ class Game:
         self.reds = 0
         self.greens = 0
         self.level = level
-        self.grid = self.load_level(level)
+        if level != 4:
+            self.grid_size = 8
+        else:
+            self.grid_size = 6
+        self.grid = self.load_level(level, self.grid_size)
         self.blocks = self.generate_blocks()
         self.score = 0
         self.simulated_score = 0
@@ -25,8 +29,8 @@ class Game:
         
 
     
-    def load_level(self, level):
-        grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+    def load_level(self, level, size):
+        grid = [[0 for _ in range(size)] for _ in range(size)]
         base_path = os.path.dirname(__file__)
         level_file = os.path.join(base_path, f'../levels/level{level}.txt')
         
@@ -152,15 +156,15 @@ class Game:
     
 
     
-    def draw_grid(self):
+    def draw_grid(self, size):
         # Draw the grid background
         grid_rect = pygame.Rect(GRID_OFFSET_X, GRID_OFFSET_Y, 
-                              GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE)
+                              size * CELL_SIZE, size * CELL_SIZE)
         pygame.draw.rect(screen, (240, 240, 240), grid_rect)
         
         # Draw grid cells
-        for row in range(GRID_SIZE):
-            for col in range(GRID_SIZE):
+        for row in range(size):
+            for col in range(size):
                 cell_rect = pygame.Rect(
                     GRID_OFFSET_X + col * CELL_SIZE,
                     GRID_OFFSET_Y + row * CELL_SIZE,
@@ -177,7 +181,7 @@ class Game:
         for block in self.blocks:
             block.draw()
     
-    def draw_placement_preview(self, block):
+    def draw_placement_preview(self, block, size):
         if not self.current_grid_pos:
             return
         
@@ -194,12 +198,12 @@ class Game:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
                     # Only draw preview if within grid bounds
-                    if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:
+                    if 0 <= r < size and 0 <= c < size:
                         pos_x = GRID_OFFSET_X + c * CELL_SIZE
                         pos_y = GRID_OFFSET_Y + r * CELL_SIZE
                         screen.blit(highlight_surface, (pos_x, pos_y))
 
-    def draw_hint_preview(self):
+    def draw_hint_preview(self, size):
         if not self.hint_position:
             return
         
@@ -225,7 +229,7 @@ class Game:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
                     # Only draw preview if within grid bounds
-                    if 0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE:
+                    if 0 <= r < size and 0 <= c < size:
                         pos_x = GRID_OFFSET_X + c * CELL_SIZE
                         pos_y = GRID_OFFSET_Y + r * CELL_SIZE
                         screen.blit(highlight_surface, (pos_x, pos_y))
@@ -268,7 +272,7 @@ class Game:
         overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
         screen.blit(overlay, (0, 0))
-        if(self.level not in [1,2,3]):
+        if(self.level not in [1,2,3,4]):
             game_over_text = font.render("GAME OVER", True, (255, 0, 0))
         else:
             if (self.reds == 0):
@@ -289,7 +293,7 @@ class Game:
             screen.blit(next_level, (WINDOW_WIDTH // 2 - next_level.get_width() // 2,
                                     WINDOW_HEIGHT // 2 + 120))
     
-    def can_place_block(self, block, grid_pos):
+    def can_place_block(self, block, grid_pos, size):
         if not grid_pos:
             return False
             
@@ -301,7 +305,7 @@ class Game:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
                     # Check boundaries
-                    if r < 0 or r >= GRID_SIZE or c < 0 or c >= GRID_SIZE:
+                    if r < 0 or r >= size or c < 0 or c >= size:
                         return False
                     
                     # Check if cell is already occupied
@@ -320,30 +324,30 @@ class Game:
                     self.grid[r][c] = block.color
 
     
-    def check_lines(self, simulated):
+    def check_lines(self, simulated, size):
         lines_cleared = 0
         
         # Check horizontal lines
         rows_to_clear = []
-        for row in range(GRID_SIZE):
+        for row in range(size):
             if all(self.grid[row]):
                 rows_to_clear.append(row)
                 lines_cleared += 1
         
         # Clear horizontal lines
         for row in rows_to_clear:
-            self.grid[row] = [0 for _ in range(GRID_SIZE)]
+            self.grid[row] = [0 for _ in range(size)]
         
         # Check vertical lines
         cols_to_clear = []
-        for col in range(GRID_SIZE):
-            if all(self.grid[row][col] for row in range(GRID_SIZE)):
+        for col in range(size):
+            if all(self.grid[row][col] for row in range(size)):
                 cols_to_clear.append(col)
                 lines_cleared += 1
         
         # Clear vertical lines
         for col in cols_to_clear:
-            for row in range(GRID_SIZE):
+            for row in range(size):
                 self.grid[row][col] = 0
         
         # Update score
@@ -354,12 +358,12 @@ class Game:
         
         return lines_cleared > 0
     
-    def find_grid_position(self, pixel_pos):
+    def find_grid_position(self, pixel_pos, size):
         x, y = pixel_pos
         
         # Check if position is within grid bounds
-        if (GRID_OFFSET_X <= x <= GRID_OFFSET_X + GRID_SIZE * CELL_SIZE and
-            GRID_OFFSET_Y <= y <= GRID_OFFSET_Y + GRID_SIZE * CELL_SIZE):
+        if (GRID_OFFSET_X <= x <= GRID_OFFSET_X + size * CELL_SIZE and
+            GRID_OFFSET_Y <= y <= GRID_OFFSET_Y + size * CELL_SIZE):
             
             col = (x - GRID_OFFSET_X) // CELL_SIZE
             row = (y - GRID_OFFSET_Y) // CELL_SIZE
@@ -370,29 +374,28 @@ class Game:
     
     def update_placement_preview(self, block):
         # Update the grid position based on the block's position
-        self.current_grid_pos = self.find_grid_position(block.position)
-        
+        self.can_place_current = self.can_place_block(block, self.current_grid_pos, self.grid_size)
         # Check if we can place the block at the current position
-        self.can_place_current = self.can_place_block(block, self.current_grid_pos)
+        self.current_grid_pos = self.find_grid_position(block.position, self.grid_size)
     
     def try_place_block(self, block):
         # Already checked in update_placement_preview
         if self.can_place_current and self.current_grid_pos:
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
-            self.check_lines(False)
+            self.check_lines(False, self.grid_size)
             return True
         
         return False
     
     def simulate_try_place_block(self, block):
 
-        self.can_place_current = self.can_place_block(block, self.current_grid_pos)
+        self.can_place_current = self.can_place_block(block, self.current_grid_pos, self.grid_size)
 
         if self.can_place_current and self.current_grid_pos:
             self.place_block(block, self.current_grid_pos)
             # Check if lines are cleared
-            self.check_lines(True)
+            self.check_lines(True, self.grid_size)
             return True
         
         return False
@@ -401,20 +404,20 @@ class Game:
 
     def check_wins_finite_mode(self):
         print("level in check wins finite mode", self.level)
-        if (self.level in [1,2,3] and self.reds == 0):
+        if (self.level in [1,2,3,4] and self.reds == 0):
             return True
 
-    def check_game_over(self):
+    def check_game_over(self, size):
         self.reds = self.count_reds()
         
-        if ((self.level in [1,2,3]) and (self.reds == 0)):
-            return self.check_wins_finite_mode()
+        if self.check_wins_finite_mode():
+            return True
         else:
             for block in self.blocks:
-                for row in range(GRID_SIZE):
-                    for col in range(GRID_SIZE):
-                        if self.can_place_block(block, (row, col)):
-                            return False
+                for row in range(size):
+                    for col in range(size):
+                        if self.can_place_block(block, (row, col), self.grid_size): 
+                                return False
             
             self.game_over = True
             return True
