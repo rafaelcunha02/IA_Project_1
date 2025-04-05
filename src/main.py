@@ -101,7 +101,7 @@ def main():
                         elif event.type == KEYDOWN:
                             if event.key == K_h:
                                 bot = Bot(game, "greedy")
-                                bot_move = bot.auto_play_greedy_bestfs()
+                                bot_move = bot.auto_play_greedy_bestfs(False)
                             if event.key == K_m:
                                 in_menu = True
                     if (game.player_type == 1):
@@ -194,7 +194,7 @@ def main():
             title_text = title_font.render("Block Blast", True, (255, 255, 255))
             screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, 20))
 
-            if(game.player_type not in {0, 1} and (not game.game_over)):
+            if(game.player_type not in {0} and (not game.game_over)):
                 game.draw_grid()
                 game.draw_blocks()
                 game.draw_score()
