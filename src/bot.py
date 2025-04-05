@@ -148,7 +148,7 @@ class Bot:
         return filled_cells
     
 
-    def simulate_move(self, game_state, block, position, depth):
+    def simulate_move(self, game_state, block, position):
         """Simulate a move and return the resulting game state."""
         # Create a deep copy of the game state to avoid modifying the original
         new_game = copy.deepcopy(game_state)  # Use deepcopy to ensure the original game state is not altered
@@ -181,7 +181,7 @@ class Bot:
     
 
 
-    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
+    def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves):
         # Initialize current_state's valid_moves if not set
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
@@ -194,8 +194,7 @@ class Bot:
 
         open_set.append(current_state)
 
-        # Track the closest state to the goal
-        closest_state = current_state
+        # Track the closest score to the goal
         closest_f_score = f_score[current_state]
 
         while open_set:
@@ -212,15 +211,11 @@ class Bot:
 
             # Update the closest state if necessary
             if f_score[current] < closest_f_score:
-                closest_state = current
                 closest_f_score = f_score[current]
 
             # Get the current depth
             _, _, current_depth = parents[current]
 
-            # Stop expanding if the depth limit is reached
-            if current_depth >= depth_limit:
-                continue
             
             # Use the valid_moves from the CURRENT state, not the initial state
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
@@ -232,7 +227,7 @@ class Bot:
             for move in current.valid_moves:
                  # Current code...
                 (block, (row, col), simulation) = move
-                neighbor = self.simulate_move(current.game, block, (row, col), depth_limit)
+                neighbor = self.simulate_move(current.game, block, (row, col))
                 # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
 
                 tentative_g_score = g_score[current]
@@ -255,9 +250,8 @@ class Bot:
                     open_set.append(neighbor)
 
         # If no goal state is found, return the move leading to the closest state
-        print("Goal state not found. Returning closest state.")
-        a = self.reconstruct_move(parents, closest_state)
-        return a[0]
+        print("Goal state not found.")
+        return None
     
     def is_goal_state(self, state, goal_state):
         # Custom logic to check if the goal is reached
@@ -362,17 +356,14 @@ class Bot:
         else:
             goal_state = Simulation(0, None, None, None, None)
         
-        a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves, 999)
+        a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves)
         self.game.solution = a
         (block, (row, col), sim) = a[0]
         self.game.hint_block = block
         self.game.hint_position = (row, col)
         if auto:
-            print(self.game.player_type)
-            print("auto") 
             return a
         else:
-            print("else")
             return a[0]
 
 
@@ -413,7 +404,7 @@ class Bot:
             
             for move in current_state.valid_moves:
                 block, position, _ = move
-                next_state = self.simulate_move(current_state.game, block, position, depth)
+                next_state = self.simulate_move(current_state.game, block, position)
                 
                 # Add the next state to the queue
                 queue.append((next_state, current_state, move, depth + 1))
@@ -463,7 +454,7 @@ class Bot:
             # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
-                next_state = self.simulate_move(current_state.game, block, position, depth)
+                next_state = self.simulate_move(current_state.game, block, position)
                 
                 # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
@@ -524,7 +515,7 @@ class Bot:
             # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
-                next_state = self.simulate_move(current_state.game, block, position, depth)
+                next_state = self.simulate_move(current_state.game, block, position)
                 
                 # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
@@ -676,7 +667,7 @@ class Bot:
             for move in current.valid_moves:
                  # Current code...
                 (block, (row, col), simulation) = move
-                neighbor = self.simulate_move(current.game, block, (row, col), depth_limit)
+                neighbor = self.simulate_move(current.game, block, (row, col))
                 # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
 
                 tentative_g_score = g_score[current] + self.cost(current, move)
