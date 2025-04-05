@@ -9,6 +9,29 @@ import copy
 import os
 import csv
 
+def write_to_csv(filename, data, headers=["Number of Moves", "Number of States", "Memory", "Time"]):
+    """
+    Writes data to a CSV file.
+
+    Args:
+        filename (str): The name of the CSV file.
+        data (list of lists): The data to write, where each inner list represents a row.
+        headers (list, optional): The headers for the CSV file. Defaults to None.
+    """
+    file_exists = False
+    try:
+        file_exists = open(filename).close() is None
+    except FileNotFoundError:
+        pass
+
+    with open(filename, mode="w", newline="") as file:
+        writer = csv.writer(file)
+        # Write headers if the file is new and headers are provided
+        if headers and not file_exists:
+            writer.writerow(headers)
+        # Write the data rows
+        writer.writerows(data)
+
 class Bot:
     def __init__(self, game, mode):
         self.game = game
@@ -729,6 +752,7 @@ class Bot:
         elif self.game.player_type == 4:
             return self.auto_play_iterative_deepning()
         elif self.game.player_type == 5:
+            write_to_csv("a.csv", [[1, 2, 3, 4]])
             return self.auto_play_astar()
         else:
             print("Invalid mode. Please select 'greedy', 'astar', or 'bfs'.")
