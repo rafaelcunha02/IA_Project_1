@@ -278,6 +278,7 @@ class Bot:
     
     def heuristic_astar(self, state):
         # Count the number of rows and columns with red squares
+        red_squares = state.reds
         rows_with_reds = set()
         cols_with_reds = set()
         for row in range(len(state.game.grid)):
@@ -291,10 +292,13 @@ class Bot:
         cols_to_clear = len(cols_with_reds)
 
         # Assume that each move can clear at most one row or column
-        moves_to_clear_reds = min(rows_to_clear, cols_to_clear)
+        moves_to_clear_reds = max(rows_to_clear, cols_to_clear)
+
+        isolated_reds = red_squares - (rows_to_clear + cols_to_clear)
+        penalty_for_isolated_reds = max(0, isolated_reds // 2)
 
         # Final heuristic value
-        return moves_to_clear_reds
+        return moves_to_clear_reds + penalty_for_isolated_reds
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
