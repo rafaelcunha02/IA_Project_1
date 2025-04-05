@@ -38,9 +38,9 @@ def main():
             bot_move = game.hint_block, game.hint_position
             mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
 
-            bot_move = None
-            current_block = None
-            game.current_grid_pos = None
+            #bot_move = None
+            #current_block = None
+            #game.current_grid_pos = None
             bot = Bot(game, game.player_type)
 
             for event in pygame.event.get():
