@@ -520,7 +520,8 @@ class Bot:
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
         print(depth_limit)
-        return self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        self.game.solution = self.bfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        return self.game.solution
     
 
     def auto_play_dfs(self):
@@ -547,7 +548,8 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         depth_limit = len(self.game.blocks) + 1  # Limit depth to the number of blocks
-        return self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        self.game.solution = self.dfs_algorithm(initial_state, goal_state, possible_moves, depth_limit)
+        return self.game.solution
     
     def astar_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
         # Initialize current_state's valid_moves if not set
