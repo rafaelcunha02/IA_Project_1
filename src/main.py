@@ -102,38 +102,43 @@ def main():
                             if event.key == K_h:
                                 bot = Bot(game, "greedy")
                                 bot_move = bot.auto_play_greedy_bestfs()
+                            if event.key == K_m:
+                                in_menu = True
                     if (game.player_type == 1):
-                        if event.type == KEYDOWN and event.key == K_RIGHT:
-                            bot_move = None
-                            current_block = None
-                            game.current_grid_pos = None
-                            bot = Bot(game, game.player_type)
+                        if event.type == KEYDOWN:
+                            if event.key == K_RIGHT:
+                                bot_move = None
+                                current_block = None
+                                game.current_grid_pos = None
+                                bot = Bot(game, game.player_type)
 
-                            bot_move = bot.auto_play()
-                            if(bot_move):
-                                (current_block, (row, col)) = bot_move
-                            if current_block:
-                                game.place_block(current_block, (row, col))
-                                game.check_lines(False)
-                                if current_block in game.blocks:
-                                    game.blocks.remove(current_block)
-                                    bot_move = None
-                                    current_block = None
-                                    game.current_grid_pos = None
-                                else:
-                                    print("Error: current_block not in game.blocks")
-                                    print("game blocks: ")
-                                    for block in game.blocks:
-                                        print(block.shape)
-                                    print("current_block ", current_block.shape)
-                            
+                                bot_move = bot.auto_play()
+                                if(bot_move):
+                                    (current_block, (row, col)) = bot_move
+                                if current_block:
+                                    game.place_block(current_block, (row, col))
+                                    game.check_lines(False)
+                                    if current_block in game.blocks:
+                                        game.blocks.remove(current_block)
+                                        bot_move = None
+                                        current_block = None
+                                        game.current_grid_pos = None
+                                    else:
+                                        print("Error: current_block not in game.blocks")
+                                        print("game blocks: ")
+                                        for block in game.blocks:
+                                            print(block.shape)
+                                        print("current_block ", current_block.shape)
                                 
-                                # If all blocks are placed, generate new ones
-                                if not game.blocks:
-                                    game.blocks = game.generate_blocks()
-                                    # Check if game is over
-                                if game.check_game_over():
-                                    game.game_over = True
+                                    
+                                    # If all blocks are placed, generate new ones
+                                    if not game.blocks:
+                                        game.blocks = game.generate_blocks()
+                                        # Check if game is over
+                                    if game.check_game_over():
+                                        game.game_over = True
+                            if event.key == K_m:
+                                in_menu = True
                     else:
                         if event.type == MOUSEBUTTONUP:
                             if game.check_mouse_in_go_to_menu(event.pos):
@@ -148,8 +153,8 @@ def main():
                         elif event.key == K_n and game.check_wins_finite_mode():
                             game = Game(game.level + 1, game.player_type)
                             game.reset()
-                    if event.key == K_m:
-                        in_menu = True
+                        if event.key == K_m:
+                            in_menu = True
         
             # Check if the mouse is in the "Go to menu" area
             if game.check_mouse_in_go_to_menu(mouse_pos):
@@ -172,15 +177,17 @@ def main():
             game.draw_score()
             game.draw_remaining_reds()
 
-            if is_in_go_to_menu:
-                game.draw_go_to_menu_highlighted()
-            else:
-                game.draw_go_to_menu()
+            if(game.player_type in {0, 1}):
+                if is_in_go_to_menu:
+                    game.draw_go_to_menu_highlighted()
+                else:
+                    game.draw_go_to_menu()
             
-            if is_in_hint:
-                game.draw_hint_button_highlighted()
-            else:
-                game.draw_hint_button()
+            if(game.player_type == 0):
+                if is_in_hint:
+                    game.draw_hint_button_highlighted()
+                else:
+                    game.draw_hint_button()
 
             if game.game_over:
                 game.draw_game_over()
