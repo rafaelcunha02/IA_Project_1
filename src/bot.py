@@ -8,6 +8,7 @@ import itertools
 import copy
 import os
 import csv
+import time
 
 def write_to_csv(filename, data, headers=["Number of Moves", "Number of States", "Memory", "Time"]):
     """
@@ -250,7 +251,8 @@ class Bot:
             for move in current.valid_moves:
                  # Current code...
                 (block, (row, col), simulation) = move
-                neighbor = self.simulate_move(current.game, block, (row, col))
+                if not hasattr(neighbor, 'valid_moves') or neighbor.valid_moves is None:
+                    neighbor = self.simulate_move(current.game, block, (row, col))
                 # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
 
                 tentative_g_score = g_score[current]
@@ -321,14 +323,16 @@ class Bot:
         penalty_for_isolated_reds = max(0, isolated_reds // 2)
 
         # Final heuristic value
-        return moves_to_clear_reds + penalty_for_isolated_reds
+        return moves_to_clear_reds #penalty_for_isolated_reds
 
     def reconstruct_move(self, parents, current):
         # Trace back to the first move
         moves = []  # List to store the sequence of moves
         while current in parents and parents[current][0] is not None:  # While there is a parent
+            print("Current state:", current)
             parent, move, _ = parents[current]  # Extract parent, move, and depth
             if move:  # If a move exists, add it to the list
+                print("Move:", move)
                 moves.append(move)
             current = parent  # Move to the parent state
     
@@ -391,13 +395,13 @@ class Bot:
         """Perform a BFS to find the optimal move sequence."""
         from collections import deque
         
+        start_time = time.time()
         # Initialize the BFS queue with the initial state
         queue = deque([(initial_state, None, None, 0)])  # (state, parent, move, depth)
         visited = set()
         parents = {}  # Track parent relationships for path reconstruction
     
         
-        print("lel")
         counter = 0
         while queue:
             current_state, parent, move_taken, depth = queue.popleft()
@@ -408,11 +412,14 @@ class Bot:
             # Check if the current state is the goal state
             if current_state.reds == 0:
                 print("goal state found")
+                elapsed_time = time.time() - start_time
+                print(f"Elapsed time: {elapsed_time:.2f} seconds")
                 return self.reconstruct_move(parents, current_state)
         
             
             # Create a state key for visited tracking
-            state_key = str(current_state.game.grid) + str(current_state.reds) + str(current_state.score)
+            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
+            
             if state_key in visited:
                 continue
             counter += 1
@@ -544,6 +551,12 @@ class Bot:
 
     def auto_play_bfs(self):
         """Commander function that finds and evaluates moves using BFS."""
+
+        if(self.game.solution != []):
+            self.game.solution.pop(0)
+            print(self.game.solution[0])
+            return self.game.solution
+    
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
         
@@ -572,6 +585,13 @@ class Bot:
 
     def auto_play_dfs(self):
         """Commander function that finds and evaluates moves using DFS."""
+
+        if self.game.solution != []:
+            self.game.solution.pop(0)
+            print(self.game.solution[0])
+            return self.game.solution
+        
+
         if self.evaluate_grid() == 0:
             return (self.game.blocks[0], (0, 0))
         
@@ -631,82 +651,78 @@ class Bot:
                     self.game.solution = a
                     return a
     
-    def astar_algorithm(self, current_state, goal_state, possible_moves, depth_limit):
-        # Initialize current_state's valid_moves if not set
+    def astar_algorithm(self, current_state, goal_state, possible_moves):
+        import heapq
+        start_time = time.time()
+        counter = 0
+    
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
-            
+    
         open_set = []
         closed_set = set()
         g_score = {current_state: 0}
         f_score = {current_state: self.heuristic_astar(current_state)}
         parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
-
-        open_set.append(current_state)
-
+    
+        # Initialize the priority queue
+        heapq.heappush(open_set, (f_score[current_state], current_state))
+    
         # Track the closest state to the goal
-        closest_state = current_state
         closest_f_score = f_score[current_state]
-
+    
         while open_set:
-            current = min(open_set, key=lambda state: f_score.get(state, float('inf')))
-
+            # Get the state with the lowest f_score
+            _, current = heapq.heappop(open_set)
+            #print(f"Current state: {current}, f_score: {f_score[current]}")
+    
             # Check if goal is reached
-            print(current.reds)
             if current.reds == 0:
                 print("goal state")
+                print("number of states: ", counter)
+                elapsed_time = time.time() - start_time
+                print(f"Elapsed time: {elapsed_time:.2f} seconds")
                 return self.reconstruct_move(parents, current)
-
-            open_set.remove(current)
+    
             closed_set.add(current)
+            counter += 1
 
+    
             # Update the closest state if necessary
             if f_score[current] < closest_f_score:
-                closest_state = current
                 closest_f_score = f_score[current]
-
+    
             # Get the current depth
             _, _, current_depth = parents[current]
-
-            # Stop expanding if the depth limit is reached
-            if current_depth >= depth_limit:
-                continue
-            
+    
             # Use the valid_moves from the CURRENT state, not the initial state
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
-                # If this state doesn't have valid_moves calculated, do it now
                 current.valid_moves = self.find_possible_moves(current.game)
-            print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
-
-                # Or more detailed tracking inside the move loop:
+    
             for move in current.valid_moves:
-                 # Current code...
                 (block, (row, col), simulation) = move
                 neighbor = self.simulate_move(current.game, block, (row, col))
-                # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
-
+    
                 tentative_g_score = g_score[current] + self.cost(current, move)
-                
-                # If this path to neighbor is worse than one we've already found, skip
+    
                 if tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
-                    
+    
                 # We found a better path to the neighbor
                 parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + self.heuristic_astar(neighbor)
-                
+    
                 if neighbor in closed_set:
-                    # Important: move the neighbor from closed back to open set
-                    # since we found a better path to it
-                    closed_set.remove(neighbor)
-                    
-                if neighbor not in open_set:
-                    open_set.append(neighbor)
+                    continue
+    
+                heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
 
+    
         # If no goal state is found, return the move leading to the closest state
-        print("Goal state not found. Returning closest state.")
-        return self.reconstruct_move(parents, closest_state)
+        print("Goal state not found")
+        return None
     
     def auto_play_astar(self):
         """Commander function that finds and evaluates moves using A* algorithm."""
@@ -736,8 +752,7 @@ class Bot:
             goal_state = Simulation(0, None, None, None, None)
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
-        depth_limit = 10
-        self.game.solution = self.astar_algorithm(current_state, goal_state, possible_moves, depth_limit)
+        self.game.solution = self.astar_algorithm(current_state, goal_state, possible_moves)
         return self.game.solution
     
 

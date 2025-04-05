@@ -11,9 +11,9 @@ CELL_SIZE = 40
 GRID_OFFSET_X = (WINDOW_WIDTH - GRID_SIZE * CELL_SIZE) // 2
 GRID_OFFSET_Y = 100
 BLOCK_TYPES = [
-    [[1]], 
-    [[1, 1]],
-    [[1], [1]],
+    [[1],[1],[1]], 
+    [[1],[1],[1]],
+    [[1],[1],[1]],
     [[1, 1], [1, 1]],
     [[1, 1, 1]],
     [[1], [1], [1]],
