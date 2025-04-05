@@ -171,7 +171,7 @@ def main():
 
             # Draw hint preview if we asked for a hint (to be improved for more bots)
             if bot_move:
-                game.draw_hint_preview(game.level)
+                game.draw_hint_preview(game.grid_size)
                 
             game.draw_blocks()
             game.draw_score()
