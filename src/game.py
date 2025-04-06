@@ -10,10 +10,16 @@ class Game:
         self.reds = 0
         self.greens = 0
         self.level = level
-        if level != 4:
-            self.grid_size = 8
-        else:
-            self.grid_size = 6
+        level_grid_sizes = {
+            1: 8, 2: 8, 3: 8,  # Levels 1 to 3 use 8x8 grids
+            4: 4,              # Level 4 uses a 4x4 grid
+            5: 5,              # Level 5 uses a 4x4 grid
+            6: 6,              # Level 6 uses a 5x5 grid
+            7: 6               # Level 7 uses a 6x6 grid
+        }
+        self.grid_size = level_grid_sizes.get(level, 8)
+
+
         self.grid = self.load_level(level, self.grid_size)
         self.blocks = self.generate_blocks()
         self.score = 0
@@ -404,7 +410,7 @@ class Game:
 
     def check_wins_finite_mode(self):
         print("level in check wins finite mode", self.level)
-        if (self.level in [1,2,3,4] and self.reds == 0):
+        if (self.level in [1,2,3,4,5,6,7] and self.reds == 0):
             return True
 
     def check_game_over(self, size):
