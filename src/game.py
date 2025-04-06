@@ -11,14 +11,13 @@ class Game:
         self.greens = 0
         self.level = level
         level_grid_sizes = {
-            1: 8, 2: 8, 3: 8,  # Levels 1 to 3 use 8x8 grids
-            4: 4,              # Level 4 uses a 4x4 grid
-            5: 5,              # Level 5 uses a 4x4 grid
-            6: 6,              # Level 6 uses a 5x5 grid
-            7: 6               # Level 7 uses a 6x6 grid
+            1: 8, 2: 8, 3: 8,  
+            4: 4,              
+            5: 5,              
+            6: 6,              
+            7: 6               
         }
         self.grid_size = level_grid_sizes.get(level, 8)
-
 
         self.grid = self.load_level(level, self.grid_size)
         self.blocks = self.generate_blocks()
@@ -62,14 +61,11 @@ class Game:
 
 
     def count_aligned_reds(self, block, position):
-        
         row, col = position
         block_rows = len(block)
         
         last_row = row + block_rows - 1
         last_col = col + len(block[0]) - 1
-        #print("col ", col)
-        #print("last col ", last_col)
         reds = 0
 
         if(self.reds > 0):
@@ -92,7 +88,6 @@ class Game:
         
 
         
-
     def count_aligned_blues(self, block, position):
         row, col = position
         block_rows = len(block)
@@ -118,7 +113,6 @@ class Game:
         return blues
 
 
-
     def count_reds(self):
         reds = 0
         for row in self.grid:
@@ -136,26 +130,23 @@ class Game:
                     greens += 1
         return greens
 
+
     def generate_blocks(self):
         blocks = []
-        
-        # Positions for the three blocks at the bottom
         positions = [
             (50, WINDOW_HEIGHT - 120),
             (WINDOW_WIDTH // 2 - 40, WINDOW_HEIGHT - 120),
             (WINDOW_WIDTH - 180, WINDOW_HEIGHT - 120)
         ]
         
-        # Use a static index to cycle through BLOCK_TYPES
         if not hasattr(self, 'block_index'):
-            self.block_index = 0  # Initialize the index if it doesn't exist
+            self.block_index = 0 
     
         for i in range(3):
             block_type = BLOCK_TYPES[self.block_index]
             color = BLUE
             blocks.append(Block(block_type, color, positions[i]))
             
-            # Increment the index and wrap around if it exceeds the length of BLOCK_TYPES
             self.block_index = (self.block_index + 1) % len(BLOCK_TYPES)
         
         return blocks
@@ -163,12 +154,10 @@ class Game:
 
     
     def draw_grid(self, size):
-        # Draw the grid background
         grid_rect = pygame.Rect(GRID_OFFSET_X, GRID_OFFSET_Y, 
                               size * CELL_SIZE, size * CELL_SIZE)
         pygame.draw.rect(screen, (240, 240, 240), grid_rect)
         
-        # Draw grid cells
         for row in range(size):
             for col in range(size):
                 cell_rect = pygame.Rect(
@@ -176,17 +165,18 @@ class Game:
                     GRID_OFFSET_Y + row * CELL_SIZE,
                     CELL_SIZE, CELL_SIZE
                 )
-                # Draw the filled cells if any
+
                 if self.grid[row][col]:
                     pygame.draw.rect(screen, self.grid[row][col], cell_rect)
                 
-                # Draw cell borders
                 pygame.draw.rect(screen, (200, 200, 200), cell_rect, 1)
     
+
     def draw_blocks(self):
         for block in self.blocks:
             block.draw()
     
+
     def draw_placement_preview(self, block, size):
         if not self.current_grid_pos:
             return
@@ -194,7 +184,6 @@ class Game:
         grid_row, grid_col = self.current_grid_pos
         highlight_color = HIGHLIGHT_COLOR if self.can_place_current else INVALID_COLOR
         
-        # Create a surface with per-pixel alpha
         highlight_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
         highlight_surface.fill(highlight_color)
         
@@ -203,29 +192,22 @@ class Game:
                 if cell:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
-                    # Only draw preview if within grid bounds
                     if 0 <= r < size and 0 <= c < size:
                         pos_x = GRID_OFFSET_X + c * CELL_SIZE
                         pos_y = GRID_OFFSET_Y + r * CELL_SIZE
                         screen.blit(highlight_surface, (pos_x, pos_y))
+
 
     def draw_hint_preview(self, size):
         if not self.hint_position:
             return
         
-        #print("drawing hint")
-        
         grid_row, grid_col = self.hint_position
-
-        #print("hint position", grid_row, grid_col)
 
         block = self.hint_block
 
-        #print("block shape", block.shape)
-
         highlight_color = HIGHLIGHT_COLOR
-        
-        # Create a surface with per-pixel alpha
+
         highlight_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
         highlight_surface.fill(highlight_color)
         
@@ -234,12 +216,12 @@ class Game:
                 if cell:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
-                    # Only draw preview if within grid bounds
                     if 0 <= r < size and 0 <= c < size:
                         pos_x = GRID_OFFSET_X + c * CELL_SIZE
                         pos_y = GRID_OFFSET_Y + r * CELL_SIZE
                         screen.blit(highlight_surface, (pos_x, pos_y))
     
+
     def draw_score(self):
         score_text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         screen.blit(score_text, (20, 20))
@@ -247,27 +229,27 @@ class Game:
     def draw_remaining_reds(self):
         reds_text = font.render(f"Red Squares Remaining: {self.reds}", True, (255, 255, 255))
         screen.blit(reds_text, (20, 50))
-    
+
     def draw_go_to_menu(self):
         menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 255))
-        screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
+        screen.blit(menu_text, self.menu_button_rect.topleft)  
 
     def check_mouse_in_go_to_menu(self, pos):
         if self.menu_button_rect.collidepoint(pos):
             return True
         return False
-    
+
     def draw_go_to_menu_highlighted(self):
         menu_text = font.render("Go Back to Menu (M)", True, (255, 255, 0))
-        screen.blit(menu_text, self.menu_button_rect.topleft)  # Use the rectangle's position for drawing the text
-    
+        screen.blit(menu_text, self.menu_button_rect.topleft)  
+
     def draw_hint_button(self):
         hint_text = font.render("Greedy BestFS Hint (H)", True, (255, 255, 255))
-        screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
+        screen.blit(hint_text, self.hint_button_rect.topleft)  
 
     def draw_hint_button_highlighted(self):
         hint_text = font.render("Greedy BestFS Hint (H)", True, (255, 255, 0))
-        screen.blit(hint_text, self.hint_button_rect.topleft)  # Use the rectangle's position for drawing the text
+        screen.blit(hint_text, self.hint_button_rect.topleft) 
 
     def check_mouse_in_hint(self, pos):
         if self.hint_button_rect.collidepoint(pos):
@@ -299,6 +281,7 @@ class Game:
             screen.blit(next_level, (WINDOW_WIDTH // 2 - next_level.get_width() // 2,
                                     WINDOW_HEIGHT // 2 + 120))
     
+
     def can_place_block(self, block, grid_pos, size):
         if not grid_pos:
             return False
@@ -310,16 +293,15 @@ class Game:
                 if cell:
                     r, c = grid_row + row_idx, grid_col + col_idx
                     
-                    # Check boundaries
                     if r < 0 or r >= size or c < 0 or c >= size:
                         return False
                     
-                    # Check if cell is already occupied
                     if self.grid[r][c]:
                         return False
         
         return True
     
+
     def place_block(self, block, grid_pos):
         grid_row, grid_col = grid_pos
         
@@ -332,31 +314,25 @@ class Game:
     
     def check_lines(self, simulated, size):
         lines_cleared = 0
-        
-        # Check horizontal lines
         rows_to_clear = []
         for row in range(size):
             if all(self.grid[row]):
                 rows_to_clear.append(row)
                 lines_cleared += 1
         
-        # Clear horizontal lines
         for row in rows_to_clear:
             self.grid[row] = [0 for _ in range(size)]
         
-        # Check vertical lines
         cols_to_clear = []
         for col in range(size):
             if all(self.grid[row][col] for row in range(size)):
                 cols_to_clear.append(col)
                 lines_cleared += 1
-        
-        # Clear vertical lines
+
         for col in cols_to_clear:
             for row in range(size):
                 self.grid[row][col] = 0
         
-        # Update score
         if not simulated:
             self.score += lines_cleared * 100
         else:
@@ -364,10 +340,10 @@ class Game:
         
         return lines_cleared > 0
     
+    
     def find_grid_position(self, pixel_pos, size):
         x, y = pixel_pos
         
-        # Check if position is within grid bounds
         if (GRID_OFFSET_X <= x <= GRID_OFFSET_X + size * CELL_SIZE and
             GRID_OFFSET_Y <= y <= GRID_OFFSET_Y + size * CELL_SIZE):
             
@@ -378,40 +354,38 @@ class Game:
         
         return None
     
+    
     def update_placement_preview(self, block):
-        # Update the grid position based on the block's position
         self.can_place_current = self.can_place_block(block, self.current_grid_pos, self.grid_size)
-        # Check if we can place the block at the current position
         self.current_grid_pos = self.find_grid_position(block.position, self.grid_size)
     
+
     def try_place_block(self, block):
-        # Already checked in update_placement_preview
         if self.can_place_current and self.current_grid_pos:
             self.place_block(block, self.current_grid_pos)
-            # Check if lines are cleared
             self.check_lines(False, self.grid_size)
             return True
         
         return False
     
+
     def simulate_try_place_block(self, block):
 
         self.can_place_current = self.can_place_block(block, self.current_grid_pos, self.grid_size)
 
         if self.can_place_current and self.current_grid_pos:
             self.place_block(block, self.current_grid_pos)
-            # Check if lines are cleared
             self.check_lines(True, self.grid_size)
             return True
         
         return False
     
 
-
     def check_wins_finite_mode(self):
         print("level in check wins finite mode", self.level)
         if (self.level in [1,2,3,4,5,6,7] and self.reds == 0):
             return True
+
 
     def check_game_over(self, size):
         self.reds = self.count_reds()

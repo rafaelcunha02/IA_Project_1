@@ -9,8 +9,9 @@ class Menu:
         self.level_options = ["Level 1", "Level 2", "Level 3", "Special 1", "Special 2", "Special 3", "Special 4", "Infinite Mode"]
         self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "Iterative Deepning AI", "A*", "Special A*", "Back (B)"]
         self.current_option = 0
-        self.current_menu = "level"  # "level" or "player"
+        self.current_menu = "level"  
         self.selected_level = None
+
 
     def draw(self):
         screen.fill(BACKGROUND_COLOR)
@@ -26,6 +27,7 @@ class Menu:
 
         pygame.display.flip()
 
+
     def handle_key_event(self, key):
         if key == pygame.K_DOWN:
             self.current_option = (self.current_option + 1) % len(self.level_options if self.current_menu == "level" else self.player_options)
@@ -37,6 +39,7 @@ class Menu:
             self.current_menu = "level"
             self.current_option = self.selected_level
         return None
+
 
     def handle_mouse_event(self, pos):
         options = self.level_options if self.current_menu == "level" else self.player_options
@@ -62,17 +65,16 @@ class Menu:
         if self.current_menu == "level":
             self.selected_level = self.current_option
             self.current_option = 0
-    
-            # If "Infinite Mode" is selected, restrict to "Human" only
+
             if self.level_options[self.selected_level] == "Infinite Mode":
                 self.player_options = ["Human", "Back (B)"]
             else:
-                # Restore full player options for other levels
                 self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "Iterative Deepning AI", "A*", "Special A*", "Back (B)"]
     
             self.current_menu = "player"
+
         else:
-            if self.current_option == len(self.player_options) - 1:  # "Back" option
+            if self.current_option == len(self.player_options) - 1: 
                 self.current_menu = "level"
                 self.current_option = self.selected_level
             else:
@@ -81,8 +83,7 @@ class Menu:
         return None
 
     def start_game(self, level, player_type):
-        # Initialize the game with the selected level and player type
         game = Game(level + 1, player_type)
-        game.player_type = player_type  # Assuming Game class can handle player_type
+        game.player_type = player_type  
         print(f"Starting game with level {level + 1} and player type {player_type}")
         return game
