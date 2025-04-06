@@ -9,6 +9,7 @@ import copy
 import os
 import csv
 import time
+from collections import deque
 
 def write_to_csv(filename, data, headers=["Number of Moves", "Number of States", "Memory", "Time"]):
     """
@@ -395,49 +396,46 @@ class Bot:
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves):
         """Perform a BFS to find the optimal move sequence."""
-        from collections import deque
-        
+
+    
         start_time = time.time()
         # Initialize the BFS queue with the initial state
         queue = deque([(initial_state, None, None, 0)])  # (state, parent, move, depth)
-        visited = set()
+        visited = set()  # Use the Simulation object's hash for visited tracking
         parents = {}  # Track parent relationships for path reconstruction
     
-        
         counter = 0
         while queue:
             current_state, parent, move_taken, depth = queue.popleft()
+    
             # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
-            
+    
             # Check if the current state is the goal state
             if current_state.reds == 0:
-                print("goal state found")
+                print("Goal state found")
                 elapsed_time = time.time() - start_time
                 print(f"Elapsed time: {elapsed_time:.2f} seconds")
                 return self.reconstruct_move(parents, current_state)
-        
-            
-            # Create a state key for visited tracking
-            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
-            
-            if state_key in visited:
+    
+            # Check if the current state has already been visited
+            if current_state in visited:
                 continue
+            visited.add(current_state)  # Add the current state to the visited set
             counter += 1
-            visited.add(state_key)
-            
+    
             # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
-            
+    
             for move in current_state.valid_moves:
-                block, position, _ = move
+                block, position, sim = move
                 next_state = self.simulate_move(current_state.game, block, position)
-                
+    
                 # Add the next state to the queue
                 queue.append((next_state, current_state, move, depth + 1))
-        
+    
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         print(counter)
@@ -445,106 +443,103 @@ class Bot:
     
 
     def dfs_algorithm(self, initial_state, goal_state, possible_moves):
+        """Perform a DFS to find the optimal move sequence."""
         # Initialize the DFS stack with the initial state
         stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
-        visited = set()
+        visited = set()  # Use the Simulation object's hash for visited tracking
         parents = {}  # Track parent relationships for path reconstruction
-        
-        # print(f"Initial stack: {stack}")
+    
         counter = 0
         while stack:
-            current_state, parent, move_taken, depth = stack.pop()  
-
+            current_state, parent, move_taken, depth = stack.pop()
+    
             # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
-            
+    
             # Check if the current state is the goal state
             if self.is_goal_state(current_state, goal_state):
+                print("Goal state found")
                 return self.reconstruct_move(parents, current_state)
-            
-            # Create a state key for visited tracking
-            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
-            if state_key in visited:
+    
+            # Check if the current state has already been visited
+            if current_state in visited:
                 continue
+            visited.add(current_state)  # Add the current state to the visited set
             counter += 1
-            visited.add(state_key)
-            
-            
+    
             # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
                 print(f"Valid moves for current state: {current_state.valid_moves}")
-            
+    
             # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
                 next_state = self.simulate_move(current_state.game, block, position)
-                
+    
                 # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
-        
+    
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         print(counter)
         return None
     
     def iterative_deepning_algorithm(self, initial_state, goal_state, possible_moves, depth_limit, goal_state_reached):
-
+        """Perform an Iterative Deepening Search (IDS) to find the optimal move sequence."""
         # Initialize the DFS stack with the initial state
         stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
-        visited = set()
+        visited = set()  # Use the Simulation object's hash for visited tracking
         parents = {}  # Track parent relationships for path reconstruction
-        
+    
         # Track the closest state to the goal
         closest_state = initial_state
         closest_score = self.heuristic(initial_state, goal_state)
-        
-        # print(f"Initial stack: {stack}")
+    
         counter = 0
         while stack:
-            current_state, parent, move_taken, depth = stack.pop()  
-
+            current_state, parent, move_taken, depth = stack.pop()
+    
             # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
-            
+    
             # Check if the current state is the goal state
             if self.is_goal_state(current_state, goal_state):
-                print("goal state")
+                print("Goal state found")
                 goal_state_reached[0] = True
                 return self.reconstruct_move(parents, current_state)
-            
+    
             # Stop expanding if the depth limit is reached
             if depth >= depth_limit:
                 continue
-            
-            # Create a state key for visited tracking
-            state_key = hash(str(current_state.game.grid) + str(current_state.reds) + str(current_state.score))
-            if state_key in visited:
+    
+            # Check if the current state has already been visited
+            if current_state in visited:
                 continue
+            visited.add(current_state)  # Add the current state to the visited set
             counter += 1
-            visited.add(state_key)
-            
+    
             # Update the closest state if necessary
             current_score = self.heuristic(current_state, goal_state)
             if current_score < closest_score:
                 closest_state = current_state
                 closest_score = current_score
-            
+    
             # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
                 print(f"Valid moves for current state: {current_state.valid_moves}")
-            
+    
             # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
                 next_state = self.simulate_move(current_state.game, block, position)
-                
+    
                 # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
-        
+    
         # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         print(counter)
