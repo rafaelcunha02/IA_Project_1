@@ -470,7 +470,7 @@ class Bot:
                 print(f"Elapsed time: {elapsed_time:.2f} seconds")
                 print(f"Memory used: {memory_used} bytes")
                 goal_state_reached[0] = True
-                return moves
+                return moves, elapsed_time, memory_used, counter
     
             # Stop expanding if the depth limit is reached
             if depth >= depth_limit:
@@ -515,7 +515,7 @@ class Bot:
         print(f"Number of states visited: {counter}")
         print(f"Elapsed time: {elapsed_time:.2f} seconds")
         print(f"Memory used: {memory_used} bytes")
-        return self.reconstruct_move(parents, closest_state)
+        return elapsed_time, memory_used, counter
 
     def auto_play_bfs(self):
         """Commander function that finds and evaluates moves using BFS."""
@@ -598,12 +598,40 @@ class Bot:
 
         goal_state = Simulation(0, None, None, None, None)
         
+        start_time = time.time()
+        elapsed_time = 0
+        num_moves = 0
+        num_states = 0
+        memory_used = 0
+
         for i in range(1, 9999999, 1):
                 goal_state_reached = [False]
                 a = self.iterative_deepning_algorithm(initial_state, goal_state, possible_moves, i, goal_state_reached)
                 if(goal_state_reached[0] == True):
-                    self.game.solution = a
-                    return a
+                    (moves, tmp, mem, estados) = a
+                    elapsed_time += tmp
+                    memory_used += mem
+                    num_states += estados
+                    num_moves += len(moves)
+                    write_to_csv(
+                        f"iterative_deepening_metrics_{self.game.level}.csv",
+                        [[num_moves, num_states, memory_used, elapsed_time]],
+                        headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
+                    )
+                    
+
+                
+                    print("FINAL Goal state reached")
+                    print(f"Number of states visited: {num_states}")
+                    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+                    print(f"Memory used: {memory_used} bytes")
+                    self.game.solution = moves
+                    return moves
+                else:
+                    (tempo, memory, states) = a
+                    elapsed_time += tempo
+                    memory_used += memory
+                    num_states += states
     
     def astar_algorithm(self, current_state, goal_state, possible_moves):
         start_time = time.time()
