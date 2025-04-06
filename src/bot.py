@@ -206,76 +206,75 @@ class Bot:
 
 
     def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves):
-        # Initialize current_state's valid_moves if not set
+        start_time = time.time()
+        counter = 0
+    
         if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
             current_state.valid_moves = possible_moves
-            
+    
         open_set = []
         closed_set = set()
         g_score = {current_state: 0}
         f_score = {current_state: self.heuristic(current_state, goal_state)}
         parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
-
-        open_set.append(current_state)
-
-        # Track the closest score to the goal
+    
+        # Initialize the priority queue
+        heapq.heappush(open_set, (f_score[current_state], current_state))
+    
+        # Track the closest state to the goal
         closest_f_score = f_score[current_state]
-
+    
         while open_set:
-            current = min(open_set, key=lambda state: f_score.get(state, float('inf')))
-
+            # Get the state with the lowest f_score
+            _, current = heapq.heappop(open_set)
+            #print(f"Current state: {current}, f_score: {f_score[current]}")
+    
             # Check if goal is reached
-            print(current.reds)
             if current.reds == 0:
                 print("goal state")
+                print("number of states: ", counter)
+                elapsed_time = time.time() - start_time
+                print(f"Elapsed time: {elapsed_time:.2f} seconds")
                 return self.reconstruct_move(parents, current)
-
-            open_set.remove(current)
+    
             closed_set.add(current)
+            counter += 1
 
+    
             # Update the closest state if necessary
             if f_score[current] < closest_f_score:
                 closest_f_score = f_score[current]
-
+    
             # Get the current depth
             _, _, current_depth = parents[current]
-
-            
+    
             # Use the valid_moves from the CURRENT state, not the initial state
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
-                # If this state doesn't have valid_moves calculated, do it now
                 current.valid_moves = self.find_possible_moves(current.game)
-            print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
-
-                # Or more detailed tracking inside the move loop:
+    
             for move in current.valid_moves:
-                 # Current code...
                 (block, (row, col), simulation) = move
-                if not hasattr(neighbor, 'valid_moves') or neighbor.valid_moves is None:
-                    neighbor = self.simulate_move(current.game, block, (row, col))
-                # print(f"Considering move: {move}, neighbor reds: {neighbor.reds}")
-
+                neighbor = self.simulate_move(current.game, block, (row, col))
+    
                 tentative_g_score = g_score[current]
-                
-                # If this path to neighbor is worse than one we've already found, skip
+    
                 if tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
-                    
+    
                 # We found a better path to the neighbor
                 parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor, goal_state)
-                
+                f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor,goal_state)
+    
                 if neighbor in closed_set:
-                    # Important: move the neighbor from closed back to open set
-                    # since we found a better path to it
-                    closed_set.remove(neighbor)
-                    
-                if neighbor not in open_set:
-                    open_set.append(neighbor)
+                    continue
+    
+                heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
 
+    
         # If no goal state is found, return the move leading to the closest state
-        print("Goal state not found.")
+        print("Goal state not found")
         return None
     
     def is_goal_state(self, state, goal_state):
@@ -329,10 +328,13 @@ class Bot:
         # Trace back to the first move
         moves = []  # List to store the sequence of moves
         while current in parents and parents[current][0] is not None:  # While there is a parent
-            print("Current state:", current)
+            #print("Current state:", current)
             parent, move, _ = parents[current]  # Extract parent, move, and depth
             if move:  # If a move exists, add it to the list
-                print("Move:", move)
+                (block, position, _) = move
+                print("block shape:", block.shape)
+                print("position:", position)
+                print("\n")
                 moves.append(move)
             current = parent  # Move to the parent state
     
@@ -652,7 +654,6 @@ class Bot:
                     return a
     
     def astar_algorithm(self, current_state, goal_state, possible_moves):
-        import heapq
         start_time = time.time()
         counter = 0
     
