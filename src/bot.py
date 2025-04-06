@@ -76,7 +76,6 @@ class Bot:
         game.current_grid_pos = None
         return possible_moves
 
-
     def evaluate_grid(self):
         filled_cells = sum(cell != 0 for row in self.game.grid for cell in row)
         return filled_cells

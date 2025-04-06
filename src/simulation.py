@@ -13,10 +13,15 @@ class Simulation:
         self._hash = self._compute_hash()
 
     def _compute_hash(self):
-        # Create a hash based only on the grid
         if self.game and hasattr(self.game, 'grid'):
-            # Convert the grid (2D list) into a tuple of tuples for hashing
-            return hash(tuple(tuple(row) for row in self.game.grid))
+            # Hash the grid
+            grid_hash = hash(tuple(tuple(row) for row in self.game.grid))
+            
+            # Hash the blocks, ensuring block.shape is converted to a tuple
+            blocks_hash = hash(tuple(tuple(tuple(row) for row in block.shape) for block in self.game.blocks)) if self.game and hasattr(self.game, 'blocks') else 0
+            
+            # Combine the hashes with other attributes
+            return hash((grid_hash, self.reds, self.score, blocks_hash))
         return 0  # Default hash if the grid is not available
 
     def __hash__(self):
