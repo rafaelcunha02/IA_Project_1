@@ -7,7 +7,7 @@ class Menu:
         self.title_font = pygame.font.SysFont('Arial', 48)
         self.font = pygame.font.SysFont('Arial', 24)
         self.level_options = ["Level 1", "Level 2", "Level 3", "Special 1", "Infinite Mode"]
-        self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "Iterative Deepening AI", "AStar", "Back (B)"]
+        self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "Iterative Deepening AI", "A*", "Special A*", "Back (B)"]
         self.current_option = 0
         self.current_menu = "level"  # "level" or "player"
         self.selected_level = None
@@ -15,14 +15,14 @@ class Menu:
     def draw(self):
         screen.fill(BACKGROUND_COLOR)
         title_text = self.title_font.render("Wood Blocks", True, (255, 255, 255))
-        screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, WINDOW_HEIGHT // 2 - 150))
+        screen.blit(title_text, (WINDOW_WIDTH // 2 - title_text.get_width() // 2, WINDOW_HEIGHT // 2 - 250))
 
         options = self.level_options if self.current_menu == "level" else self.player_options
 
         for i, option in enumerate(options):
             color = (255, 255, 0) if i == self.current_option else (255, 255, 255)
             option_text = self.font.render(option, True, color)
-            screen.blit(option_text, (WINDOW_WIDTH // 2 - option_text.get_width() // 2, WINDOW_HEIGHT // 2 - 50 + i * 50))
+            screen.blit(option_text, (WINDOW_WIDTH // 2 - option_text.get_width() // 2, WINDOW_HEIGHT // 2 - 150 + i * 50))
 
         pygame.display.flip()
 
