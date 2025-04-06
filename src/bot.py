@@ -76,97 +76,6 @@ class Bot:
         game.current_grid_pos = None
         return possible_moves
 
-    def evaluate_moves_greedy(self, game, possible_moves):
-        """Evaluate moves using the greedy strategy.
-        
-        Args:
-            game: The game instance
-            possible_moves: List of (block, position, simulation_data) tuples
-            
-        Returns:
-            tuple: The best move (block, position) according to greedy strategy
-        """
-        if not possible_moves:
-            return None
-            
-        best_move = None
-        least_reds = game.count_reds()
-        max_score = game.score
-        max_aligned_reds = 0
-        max_aligned_blues = 0
-        
-        move_priority = {
-            'reds_changed': False,
-            'score_changed': False,
-            'can_align_reds': False,
-            'can_align_blues': False
-        }
-        
-        for block, position, sim in possible_moves:
-            if sim.reds < least_reds:
-                least_reds = sim.reds
-                best_move = (block, position)
-                game.hint_block = block
-                game.hint_position = position
-                
-                move_priority = {
-                    'reds_changed': True,
-                    'score_changed': False,
-                    'can_align_reds': False,
-                    'can_align_blues': False
-                }
-            
-            elif not move_priority['reds_changed'] and sim.score > max_score:
-                print("entrou score changed")
-                max_score = sim.score
-                best_move = (block, position)
-                game.hint_block = block
-                game.hint_position = position
-                
-                move_priority['score_changed'] = True
-            
-                move_priority['can_align_reds'] = False
-                move_priority['can_align_blues'] = False
-            
-            elif not move_priority['reds_changed'] and not move_priority['score_changed']:
-                if sim.aligned_reds > max_aligned_reds:
-                    max_aligned_reds = sim.aligned_reds
-                    best_move = (block, position)
-                    game.hint_block = block
-                    game.hint_position = position
-                    
-                    move_priority['can_align_reds'] = True
-                    move_priority['can_align_blues'] = False
-                    
-                elif not move_priority['can_align_reds'] and sim.aligned_blues > max_aligned_blues:
-                    max_aligned_blues = sim.aligned_blues
-                    best_move = (block, position)
-                    game.hint_block = block
-                    game.hint_position = position
-                    
-                    move_priority['can_align_blues'] = True
-        
-        if best_move:
-            move_priority['reds_changed'] and print("DELETE REDS")
-            move_priority['score_changed'] and print("SCORE INCREASE")
-            move_priority['can_align_reds'] and print("ALIGN WITH REDS")
-            move_priority['can_align_blues'] and print("ALIGN WITH BLUES")
-        else:
-            print("best move is none")
-            print("align reds?: ", move_priority['can_align_reds'])
-            print("align blues?: ", move_priority['can_align_blues'])
-        
-        return best_move
-
-    def auto_play_greedy(self, game):
-        """Commander function that finds and evaluates moves using greedy strategy."""
-        if self.evaluate_grid() == 0:
-            return (self.game.blocks[0], (0, 0))
-        
-        possible_moves = self.find_possible_moves(game)
-        
-        return self.evaluate_moves_greedy(game, possible_moves)
-        
 
     def evaluate_grid(self):
         filled_cells = sum(cell != 0 for row in self.game.grid for cell in row)
@@ -376,12 +285,8 @@ class Bot:
             game=self.game
         )
         
-        if(self.game.level > 3 or self.game.level < 1):
-            print("LEVEL")
-            print(self.game.level)
-            goal_state = Simulation(None, float('inf'), None, None, None)
-        else:
-            goal_state = Simulation(0, None, None, None, None)
+
+        goal_state = Simulation(0, None, None, None, None)
         
         a = self.greedy_bestfs_algorithm(current_state, goal_state, possible_moves)
         self.game.solution = a
@@ -569,12 +474,8 @@ class Bot:
         )
         
 
-        if(self.game.level > 4 or self.game.level < 1):
-            print("LEVEL")
-            print(self.game.level)
-            goal_state = Simulation(None, float('inf'), None, None, None)
-        else:
-            goal_state = Simulation(0, None, None, None, None)
+ 
+        goal_state = Simulation(0, None, None, None, None)
         
         self.game.solution = self.bfs_algorithm(initial_state, goal_state, possible_moves)
         return self.game.solution
@@ -603,12 +504,8 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        if(self.game.level > 4 or self.game.level < 1):
-            print("LEVEL")
-            print(self.game.level)
-            goal_state = Simulation(None, float('inf'), None, None, None)
-        else:
-            goal_state = Simulation(0, None, None, None, None)
+
+        goal_state = Simulation(0, None, None, None, None)
         
         self.game.solution = self.dfs_algorithm(initial_state, goal_state, possible_moves)
         return self.game.solution
@@ -634,12 +531,8 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-        if(self.game.level > 4 or self.game.level < 1):
-            print("LEVEL")
-            print(self.game.level)
-            goal_state = Simulation(None, float('inf'), None, None, None)
-        else:
-            goal_state = Simulation(0, None, None, None, None)
+
+        goal_state = Simulation(0, None, None, None, None)
         
         for i in range(1, 9999999, 1):
                 goal_state_reached = [False]
@@ -740,12 +633,8 @@ class Bot:
             game=self.game
         )
         
-        if(self.game.level > 3 or self.game.level < 1):
-            print("LEVEL")
-            print(self.game.level)
-            goal_state = Simulation(None, float('inf'), None, None, None)
-        else:
-            goal_state = Simulation(0, None, None, None, None)
+
+        goal_state = Simulation(0, None, None, None, None)
         
         # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         self.game.solution = self.astar_algorithm(current_state, goal_state, possible_moves)
