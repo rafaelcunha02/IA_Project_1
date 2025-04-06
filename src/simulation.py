@@ -1,11 +1,10 @@
 class Simulation:
-    def __init__(self, reds, score, aligned_reds, aligned_blues, game=None, special=True, cost=0, valid_moves=None):
+    def __init__(self, reds, score, aligned_reds, aligned_blues, game=None, special=True, valid_moves=None):
         self.reds = reds
         self.score = score
         self.aligned_reds = aligned_reds
         self.aligned_blues = aligned_blues
         self.game = game
-        self.cost = cost
         self.valid_moves = valid_moves
         self.special = special
 
@@ -52,4 +51,4 @@ class Simulation:
         return f"Simulation(reds={self.reds}, score={self.score}, aligned_reds={self.aligned_reds}, aligned_blues={self.aligned_blues}, cost={self.cost})"
 
     def __lt__(self, other):
-        return self.cost < other.cost
+        return self.reds < other.reds

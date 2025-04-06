@@ -636,11 +636,19 @@ class Bot:
                 memory_used = sys.getsizeof(open_set) + sys.getsizeof(closed_set) + sys.getsizeof(parents)
     
                 # Write metrics to CSV
-                write_to_csv(
-                    f"astar_algorithm_metrics_{self.game.level}.csv",
-                    [[num_moves, counter, memory_used, elapsed_time]],
-                    headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
-                )
+                if(self.game.player_type != 6):
+                    write_to_csv(
+                        f"astar_lv{self.game.level}.csv",
+                        [[num_moves, counter, memory_used, elapsed_time]],
+                        headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
+                    )
+                else:
+                    write_to_csv(
+                        f"special_astar_lv{self.game.level}.csv",
+                        [[num_moves, counter, memory_used, elapsed_time]],
+                        headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
+                    )
+
     
                 print("Goal state reached")
                 print(f"Number of states visited: {counter}")
