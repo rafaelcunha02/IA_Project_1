@@ -10,6 +10,7 @@ import os
 import csv
 import time
 from collections import deque
+import sys
 
 def write_to_csv(filename, data, headers=["Number of Moves", "Number of States", "Memory", "Time"]):
     """
@@ -140,10 +141,22 @@ class Bot:
     
             # Check if goal is reached
             if current.reds == 0:
-                print("goal state")
-                print("number of states: ", counter)
                 elapsed_time = time.time() - start_time
+                moves = self.reconstruct_move(parents, current)
+                num_moves = len(moves)
+                memory_used = sys.getsizeof(open_set) + sys.getsizeof(closed_set) + sys.getsizeof(parents)
+
+                # Write metrics to CSV
+                write_to_csv(
+                    f"greedy_algorithm_metrics_{self.game.level}.csv",
+                    [[num_moves, counter, memory_used, elapsed_time]],
+                    headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
+                )
+
+                print("Goal state reached")
+                print(f"Number of states visited: {counter}")
                 print(f"Elapsed time: {elapsed_time:.2f} seconds")
+                print(f"Memory used: {memory_used} bytes")
                 return self.reconstruct_move(parents, current)
     
             closed_set.add(current)
@@ -472,8 +485,6 @@ class Bot:
             valid_moves=possible_moves  # Pass the valid moves to the initial state
         )
         
-
- 
         goal_state = Simulation(0, None, None, None, None)
         
         self.game.solution = self.bfs_algorithm(initial_state, goal_state, possible_moves)

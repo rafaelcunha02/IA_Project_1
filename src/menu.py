@@ -6,7 +6,7 @@ class Menu:
     def __init__(self):
         self.title_font = pygame.font.SysFont('Arial', 48)
         self.font = pygame.font.SysFont('Arial', 24)
-        self.level_options = ["Level 1", "Level 2", "Level 3", "Level 4", "Infinite Mode"]
+        self.level_options = ["Level 1", "Level 2", "Level 3", "Special 1", "Infinite Mode"]
         self.player_options = ["Human", "Greedy AI", "Brute Force BFS AI", "Brute Force DFS AI", "Iterative Deepening AI", "AStar", "Back (B)"]
         self.current_option = 0
         self.current_menu = "level"  # "level" or "player"

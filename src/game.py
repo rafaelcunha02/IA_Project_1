@@ -424,7 +424,7 @@ class Game:
 
     
     def reset(self):
-        self.grid = self.load_level(self.level)
+        self.grid = self.load_level(self.level,self.grid_size)
         self.block_index = 0
         self.blocks = self.generate_blocks()
         self.score = 0

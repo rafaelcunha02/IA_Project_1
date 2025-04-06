@@ -151,6 +151,7 @@ def main():
                         if event.key == K_r:
                             game.reset()
                         elif event.key == K_n and game.check_wins_finite_mode():
+                            game.solution = []
                             game = Game(game.level + 1, game.player_type)
                             game.reset()
                         if event.key == K_m:
