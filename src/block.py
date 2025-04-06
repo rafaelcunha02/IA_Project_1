@@ -5,7 +5,7 @@ class Block:
     def __init__(self, block_type, color, position=(0, 0)):
         self.shape = block_type
         self.color = color
-        self.position = position  # Position in pixels
+        self.position = position  
         self.dragging = False
         self.offset_x = 0
         self.offset_y = 0
@@ -23,18 +23,16 @@ class Block:
                         CELL_SIZE, CELL_SIZE
                     )
                     pygame.draw.rect(screen, self.color, cell_rect)
-                    pygame.draw.rect(screen, (0, 0, 0), cell_rect, 1)  # Border
+                    pygame.draw.rect(screen, (0, 0, 0), cell_rect, 1)  
     
     def is_point_inside(self, pos):
         x, y = pos
         block_x, block_y = self.position
         
-        # Check if the point is within the block's bounding box
         if not (block_x <= x <= block_x + self.width and
                 block_y <= y <= block_y + self.height):
             return False
         
-        # Check if the point is on a filled cell
         cell_x = (x - block_x) // CELL_SIZE
         cell_y = (y - block_y) // CELL_SIZE
         

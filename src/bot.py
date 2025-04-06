@@ -13,14 +13,6 @@ from collections import deque
 import sys
 
 def write_to_csv(filename, data, headers=["Number of Moves", "Number of States", "Memory", "Time"]):
-    """
-    Writes data to a CSV file.
-
-    Args:
-        filename (str): The name of the CSV file.
-        data (list of lists): The data to write, where each inner list represents a row.
-        headers (list, optional): The headers for the CSV file. Defaults to None.
-    """
     file_exists = False
     try:
         file_exists = open(filename).close() is None
@@ -29,11 +21,12 @@ def write_to_csv(filename, data, headers=["Number of Moves", "Number of States",
 
     with open(filename, mode="w", newline="") as file:
         writer = csv.writer(file)
-        # Write headers if the file is new and headers are provided
+
         if headers and not file_exists:
             writer.writerow(headers)
-        # Write the data rows
+
         writer.writerows(data)
+
 
 class Bot:
     def __init__(self, game, mode):
@@ -42,11 +35,6 @@ class Bot:
         self.counter = itertools.count()
     
     def find_possible_moves(self, game):
-        """Find all valid moves in the current game state.
-        
-        Returns:
-            list: A list of tuples (block, position, simulation_data)
-        """
         possible_moves = []
         
         for block in game.blocks:
@@ -83,11 +71,7 @@ class Bot:
     
 
     def simulate_move(self, game_state, block, position):
-        """Simulate a move and return the resulting game state."""
-        # Create a deep copy of the game state to avoid modifying the original
-        new_game = copy.deepcopy(game_state)  # Use deepcopy to ensure the original game state is not altered
-    
-        # Set the current grid position and try to place the block
+        new_game = copy.deepcopy(game_state)  
         new_game.current_grid_pos = position
         new_game.try_place_block(block)
         
@@ -98,24 +82,20 @@ class Bot:
                 if not new_game.blocks:
                     new_game.blocks = new_game.generate_blocks()
                 
-                #print("Removed block with shape:", bloco.shape)
                 break
-    
-        # Create a new Simulation object based on the modified game state
 
         new_game_sim = Simulation(
             reds=new_game.count_reds(),
             score=new_game.score,
             aligned_reds=new_game.count_aligned_reds(block.shape, position),
             aligned_blues=new_game.count_aligned_blues(block.shape, position),
-            game=new_game,  # Pass the modified game state
-            valid_moves=self.find_possible_moves(new_game),  # Find valid moves for the new state
+            game=new_game,  
+            valid_moves=self.find_possible_moves(new_game),  
             special=self.game.player_type == 6
         )
     
         return new_game_sim
     
-
 
     def greedy_bestfs_algorithm(self, current_state, goal_state, possible_moves):
         start_time = time.time()
@@ -128,27 +108,21 @@ class Bot:
         closed_set = set()
         g_score = {current_state: 0}
         f_score = {current_state: self.heuristic(current_state, goal_state)}
-        parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
+        parents = {current_state: (None, None, 0)} 
     
-        # Initialize the priority queue
         heapq.heappush(open_set, (f_score[current_state], current_state))
     
-        # Track the closest state to the goal
         closest_f_score = f_score[current_state]
     
         while open_set:
-            # Get the state with the lowest f_score
             _, current = heapq.heappop(open_set)
-            #print(f"Current state: {current}, f_score: {f_score[current]}")
     
-            # Check if goal is reached
             if current.reds == 0:
                 elapsed_time = time.time() - start_time
                 moves = self.reconstruct_move(parents, current)
                 num_moves = len(moves)
                 memory_used = sys.getsizeof(open_set) + sys.getsizeof(closed_set) + sys.getsizeof(parents)
 
-                # Write metrics to CSV
                 write_to_csv(
                     f"greedy_algorithm_metrics_{self.game.level}.csv",
                     [[num_moves, counter, memory_used, elapsed_time]],
@@ -164,15 +138,12 @@ class Bot:
             closed_set.add(current)
             counter += 1
 
-    
-            # Update the closest state if necessary
+
             if f_score[current] < closest_f_score:
                 closest_f_score = f_score[current]
     
-            # Get the current depth
             _, _, current_depth = parents[current]
     
-            # Use the valid_moves from the CURRENT state, not the initial state
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
                 current.valid_moves = self.find_possible_moves(current.game)
     
@@ -185,7 +156,6 @@ class Bot:
                 if tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
     
-                # We found a better path to the neighbor
                 parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + self.heuristic(neighbor,goal_state)
@@ -196,90 +166,74 @@ class Bot:
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
                 print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
 
-    
-        # If no goal state is found, return the move leading to the closest state
         print("Goal state not found")
         return None
     
+    
     def is_goal_state(self, state, goal_state):
-        # Custom logic to check if the goal is reached
         return state.reds == goal_state.reds
 
     def heuristic(self, state, goal_state):
-        # If there are no valid moves, return a very high score to deprioritize this state
-
         if state.game.game_over:
-            return float('inf')  # Infinite score for states with no valid moves
+            return float('inf') 
 
         if(goal_state.reds != 0):
             return(
                 - state.score
                 - state.aligned_blues * 10
             )
-        # Otherwise, calculate the heuristic based on the priorities
+
         return (
-            state.reds * 1000 -  # Prioritize fewer reds
-            state.score * 2 -    # Then prioritize more score
-            state.aligned_reds * 100 -  # Then prioritize more aligned reds
-            state.aligned_blues * 10  # Then prioritize more aligned blues
+            state.reds * 1000 -  
+            state.score * 2 -    
+            state.aligned_reds * 100 -  
+            state.aligned_blues * 10  
         )
     
     def heuristic_astar(self, state):
-        # Count the number of rows and columns with red squares
         red_squares = state.reds
         rows_with_reds = set()
         cols_with_reds = set()
         for row in range(len(state.game.grid)):
             for col in range(len(state.game.grid[row])):
-                if state.game.grid[row][col] == (255, 0, 0):  # Red square
+                if state.game.grid[row][col] == (255, 0, 0): 
                     rows_with_reds.add(row)
                     cols_with_reds.add(col)
 
-        # Estimate the minimum number of moves required to clear all rows and columns with red squares
         rows_to_clear = len(rows_with_reds)
         cols_to_clear = len(cols_with_reds)
 
-        # Assume that each move can clear at most one row or column
         moves_to_clear_reds = max(rows_to_clear, cols_to_clear)
-
         isolated_reds = red_squares - (rows_to_clear + cols_to_clear)
         penalty_for_isolated_reds = max(0, isolated_reds // 2)
 
-        # Final heuristic value
-        return moves_to_clear_reds #penalty_for_isolated_reds
+        return moves_to_clear_reds 
 
     def reconstruct_move(self, parents, current):
-        # Trace back to the first move
-        moves = []  # List to store the sequence of moves
-        while current in parents and parents[current][0] is not None:  # While there is a parent
-            #print("Current state:", current)
-            parent, move, _ = parents[current]  # Extract parent, move, and depth
-            if move:  # If a move exists, add it to the list
+        moves = []  
+        while current in parents and parents[current][0] is not None:  
+            parent, move, _ = parents[current]  
+            if move:  
                 (block, position, _) = move
                 print("block shape:", block.shape)
                 print("position:", position)
                 print("\n")
                 moves.append(move)
-            current = parent  # Move to the parent state
+            current = parent 
     
-        # Reverse the moves to get the sequence from start to goal
         moves.reverse()
-    
-        # Print the sequence of moves
         print("Sequence of moves:")
+
         for i, move in enumerate(moves):
             block, position, _ = move
             print(f"Move {i + 1}: Block shape: {block.shape}, Position: {position}")
-        # Return the first move in the sequence (if it exists)
+
         return moves
 
     def cost(self, current, move):
-        # Implement logic to calculate the cost of a move
-        return 1  # Example cost for each move
+        return 1  
     
     def auto_play_greedy_bestfs(self, auto = True):
-        
-        """Commander function that finds and evaluates moves using A* algorithm."""
         if auto:
             if(self.game.solution != []):
                 self.game.solution.pop(0)
@@ -314,28 +268,24 @@ class Bot:
 
 
     def bfs_algorithm(self, initial_state, goal_state, possible_moves):
-        """Perform a BFS to find the optimal move sequence."""
         start_time = time.time()
-        queue = deque([(initial_state, None, None, 0)])  # (state, parent, move, depth)
-        visited = set()  # Use the Simulation object's hash for visited tracking
-        parents = {}  # Track parent relationships for path reconstruction
+        queue = deque([(initial_state, None, None, 0)])  
+        visited = set() 
+        parents = {}
     
         counter = 0
         while queue:
             current_state, parent, move_taken, depth = queue.popleft()
     
-            # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
     
-            # Check if the current state is the goal state
             if current_state.reds == 0:
                 elapsed_time = time.time() - start_time
                 moves = self.reconstruct_move(parents, current_state)
                 num_moves = len(moves)
                 memory_used = sys.getsizeof(queue) + sys.getsizeof(visited) + sys.getsizeof(parents)
     
-                # Write metrics to CSV
                 write_to_csv(
                     f"bfs_algorithm_metrics_{self.game.level}.csv",
                     [[num_moves, counter, memory_used, elapsed_time]],
@@ -348,13 +298,11 @@ class Bot:
                 print(f"Memory used: {memory_used} bytes")
                 return moves
     
-            # Check if the current state has already been visited
             if current_state in visited:
                 continue
-            visited.add(current_state)  # Add the current state to the visited set
+            visited.add(current_state)  
             counter += 1
     
-            # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
     
@@ -362,20 +310,17 @@ class Bot:
                 block, position, sim = move
                 next_state = self.simulate_move(current_state.game, block, position)
     
-                # Add the next state to the queue
                 queue.append((next_state, current_state, move, depth + 1))
     
-        # If no goal state is found, return None
         print("Goal state not found")
         print(f"Number of states visited: {counter}")
         return None    
 
+
     def dfs_algorithm(self, initial_state, goal_state, possible_moves):
-        """Perform a DFS to find the optimal move sequence."""
-        # Initialize the DFS stack with the initial state
-        stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
-        visited = set()  # Use the Simulation object's hash for visited tracking
-        parents = {}  # Track parent relationships for path reconstruction
+        stack = [(initial_state, None, None, 0)]  
+        visited = set()  
+        parents = {}  
     
         start_time = time.time()
         counter = 0
@@ -383,18 +328,15 @@ class Bot:
         while stack:
             current_state, parent, move_taken, depth = stack.pop()
     
-            # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
     
-            # Check if the current state is the goal state
             if self.is_goal_state(current_state, goal_state):
                 elapsed_time = time.time() - start_time
                 moves = self.reconstruct_move(parents, current_state)
                 num_moves = len(moves)
                 memory_used = sys.getsizeof(stack) + sys.getsizeof(visited) + sys.getsizeof(parents)
     
-                # Write metrics to CSV
                 write_to_csv(
                     f"dfs_algorithm_metrics_{self.game.level}.csv",
                     [[num_moves, counter, memory_used, elapsed_time]],
@@ -407,37 +349,30 @@ class Bot:
                 print(f"Memory used: {memory_used} bytes")
                 return moves
     
-            # Check if the current state has already been visited
             if current_state in visited:
                 continue
-            visited.add(current_state)  # Add the current state to the visited set
+            visited.add(current_state) 
             counter += 1
     
-            # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
     
-            # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
                 next_state = self.simulate_move(current_state.game, block, position)
     
-                # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
     
-        # If no goal state is found, return None
         print("Goal state not found")
         print(f"Number of states visited: {counter}")
         return None
     
-    def iterative_deepning_algorithm(self, initial_state, goal_state, possible_moves, depth_limit, goal_state_reached):
-        """Perform an Iterative Deepening Search (IDS) to find the optimal move sequence."""
-        # Initialize the DFS stack with the initial state
-        stack = [(initial_state, None, None, 0)]  # (state, parent, move, depth)
-        visited = set()  # Use the Simulation object's hash for visited tracking
-        parents = {}  # Track parent relationships for path reconstruction
     
-        # Track the closest state to the goal
+    def iterative_deepning_algorithm(self, initial_state, goal_state, possible_moves, depth_limit, goal_state_reached):
+        stack = [(initial_state, None, None, 0)] 
+        visited = set()  
+        parents = {}  
+    
         closest_state = initial_state
         closest_score = self.heuristic(initial_state, goal_state)
     
@@ -447,18 +382,15 @@ class Bot:
         while stack:
             current_state, parent, move_taken, depth = stack.pop()
     
-            # Store the parent relationship
             if parent is not None:
                 parents[current_state] = (parent, move_taken, depth)
-    
-            # Check if the current state is the goal state
+
             if self.is_goal_state(current_state, goal_state):
                 elapsed_time = time.time() - start_time
                 moves = self.reconstruct_move(parents, current_state)
                 num_moves = len(moves)
                 memory_used = sys.getsizeof(stack) + sys.getsizeof(visited) + sys.getsizeof(parents)
     
-                # Write metrics to CSV
                 write_to_csv(
                     f"iterative_deepening_metrics_{self.game.level}.csv",
                     [[num_moves, counter, memory_used, elapsed_time]],
@@ -472,40 +404,32 @@ class Bot:
                 goal_state_reached[0] = True
                 return moves
     
-            # Stop expanding if the depth limit is reached
             if depth >= depth_limit:
                 continue
     
-            # Check if the current state has already been visited
             if current_state in visited:
                 continue
-            visited.add(current_state)  # Add the current state to the visited set
+            visited.add(current_state) 
             counter += 1
     
-            # Update the closest state if necessary
             current_score = self.heuristic(current_state, goal_state)
             if current_score < closest_score:
                 closest_state = current_state
                 closest_score = current_score
     
-            # Generate all possible moves from the current state
             if not hasattr(current_state, 'valid_moves') or current_state.valid_moves is None:
                 current_state.valid_moves = self.find_possible_moves(current_state.game)
     
-            # For DFS, we reverse the order to explore depth-first
             for move in reversed(current_state.valid_moves):
                 block, position, _ = move
                 next_state = self.simulate_move(current_state.game, block, position)
     
-                # Add the next state to the stack
                 stack.append((next_state, current_state, move, depth + 1))
     
-        # If no goal state is found, return the move leading to the closest state
         print("Goal state not found. Returning closest state.")
         elapsed_time = time.time() - start_time
         memory_used = sys.getsizeof(stack) + sys.getsizeof(visited) + sys.getsizeof(parents)
     
-        # Write metrics to CSV
         write_to_csv(
             f"iterative_deepening_metrics_{self.game.level}.csv",
             [[0, counter, memory_used, elapsed_time]],
@@ -516,6 +440,7 @@ class Bot:
         print(f"Elapsed time: {elapsed_time:.2f} seconds")
         print(f"Memory used: {memory_used} bytes")
         return self.reconstruct_move(parents, closest_state)
+
 
     def auto_play_bfs(self):
         """Commander function that finds and evaluates moves using BFS."""
@@ -536,7 +461,7 @@ class Bot:
             aligned_reds=0,
             aligned_blues=0,
             game=self.game,
-            valid_moves=possible_moves  # Pass the valid moves to the initial state
+            valid_moves=possible_moves  
         )
         
         goal_state = Simulation(0, None, None, None, None)
@@ -565,7 +490,7 @@ class Bot:
             aligned_reds=0,
             aligned_blues=0,
             game=self.game,
-            valid_moves=possible_moves  # Pass the valid moves to the initial state
+            valid_moves=possible_moves  
         )
         
 
@@ -575,7 +500,6 @@ class Bot:
         return self.game.solution
     
     def auto_play_iterative_deepning(self):
-        """Commander function that finds and evaluates moves using DFS."""
         if self.game.solution != []:
             self.game.solution.pop(0)
             print(self.game.solution[0])
@@ -592,7 +516,7 @@ class Bot:
             aligned_reds=0,
             aligned_blues=0,
             game=self.game,
-            valid_moves=possible_moves  # Pass the valid moves to the initial state
+            valid_moves=possible_moves  
         )
         
 
@@ -616,26 +540,21 @@ class Bot:
         closed_set = set()
         g_score = {current_state: 0}
         f_score = {current_state: self.heuristic_astar(current_state)}
-        parents = {current_state: (None, None, 0)}  # Track parent relationships and depth
+        parents = {current_state: (None, None, 0)}  
     
-        # Initialize the priority queue
         heapq.heappush(open_set, (f_score[current_state], current_state))
     
-        # Track the closest state to the goal
         closest_f_score = f_score[current_state]
     
         while open_set:
-            # Get the state with the lowest f_score
             _, current = heapq.heappop(open_set)
     
-            # Check if goal is reached
             if current.reds == 0:
                 elapsed_time = time.time() - start_time
                 moves = self.reconstruct_move(parents, current)
                 num_moves = len(moves)
                 memory_used = sys.getsizeof(open_set) + sys.getsizeof(closed_set) + sys.getsizeof(parents)
     
-                # Write metrics to CSV
                 if(self.game.player_type != 6):
                     write_to_csv(
                         f"astar_lv{self.game.level}.csv",
@@ -649,7 +568,6 @@ class Bot:
                         headers=["Number of Moves", "Number of States", "Memory (bytes)", "Time (seconds)"]
                     )
 
-    
                 print("Goal state reached")
                 print(f"Number of states visited: {counter}")
                 print(f"Elapsed time: {elapsed_time:.2f} seconds")
@@ -659,14 +577,11 @@ class Bot:
             closed_set.add(current)
             counter += 1
     
-            # Update the closest state if necessary
             if f_score[current] < closest_f_score:
                 closest_f_score = f_score[current]
     
-            # Get the current depth
             _, _, current_depth = parents[current]
     
-            # Use the valid_moves from the CURRENT state, not the initial state
             if not hasattr(current, 'valid_moves') or current.valid_moves is None:
                 current.valid_moves = self.find_possible_moves(current.game)
     
@@ -679,7 +594,6 @@ class Bot:
                 if tentative_g_score >= g_score.get(neighbor, float('inf')):
                     continue
     
-                # We found a better path to the neighbor
                 parents[neighbor] = (current, move, current_depth + 1)
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = g_score[neighbor] + self.heuristic_astar(neighbor)
@@ -690,11 +604,9 @@ class Bot:
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
                 print(f"Open set size: {len(open_set)}, Closed set size: {len(closed_set)}")
     
-        # If no goal state is found, return None
         elapsed_time = time.time() - start_time
         memory_used = sys.getsizeof(open_set) + sys.getsizeof(closed_set) + sys.getsizeof(parents)
     
-        # Write metrics to CSV
         write_to_csv(
             f"astar_algorithm_metrics_{self.game.level}.csv",
             [[0, counter, memory_used, elapsed_time]],
@@ -707,6 +619,7 @@ class Bot:
         print(f"Memory used: {memory_used} bytes")
         return None
     
+
     def auto_play_astar(self):
         """Commander function that finds and evaluates moves using A* algorithm."""
         if(self.game.solution != []):
@@ -727,10 +640,8 @@ class Bot:
             game=self.game
         )
         
-
         goal_state = Simulation(0, None, None, None, None)
         
-        # depth_limit = len(self.game.blocks)  # Limit depth to the number of blocks
         self.game.solution = self.astar_algorithm(current_state, goal_state, possible_moves)
         return self.game.solution
     
